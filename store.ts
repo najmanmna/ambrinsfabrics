@@ -40,6 +40,9 @@ export interface CartItem {
   variant: CartVariant;
   itemKey: string;
   quantity: number;
+  sendAsGift?: boolean;       // checkbox
+  fromName?: string;          // buyer's name
+  toName?: string;   
 }
 
 interface StoreState {

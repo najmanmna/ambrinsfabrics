@@ -13,7 +13,7 @@ interface Props {
   className?: string;
   borderStyle?: string;
   displayMode?: "default" | "overlay";
-  availableStock?: number; // 🔹 optional prop to pass available stock
+  availableStock?: number; // optional prop to pass available stock
 }
 
 const QuantityButtons = ({
@@ -22,21 +22,24 @@ const QuantityButtons = ({
   className,
   borderStyle,
   displayMode = "default",
-  availableStock, // ✅ destructure this
+  availableStock,
 }: Props) => {
-  // ✅ Always get the latest cart item from store
   const cartItem = useCartStore((s) =>
     s.items.find((i) => i.itemKey === itemKey)
   );
 
-  // quantity in cart
   const itemCount = cartItem?.quantity ?? 0;
 
-  // ✅ use fallback from props if cart item doesn't exist yet
-  const finalStock =
-    cartItem?.variant?.availableStock ??
-    availableStock ??
-    0;
+// Detect if this is a voucher
+const isVoucher = (product as any).productType === "voucher";
+
+
+
+
+  // ✅ For vouchers, pretend stock is unlimited
+  const finalStock = isVoucher
+    ? 10
+    : cartItem?.variant?.availableStock ?? availableStock ?? 0;
 
   const addItem = useCartStore((s) => s.addItem);
   const increaseQuantity = useCartStore((s) => s.increaseQuantity);
@@ -44,18 +47,20 @@ const QuantityButtons = ({
 
   const canIncrease = itemCount < finalStock;
 
-
   const handleAdd = () => {
-    if (!cartItem) return; // safety
-    if (!canIncrease) {
+    if (!cartItem) return;
+
+    if (!isVoucher && !canIncrease) {
       toast.error("Cannot add more than available stock");
       return;
     }
+
     if (itemCount === 0) {
       addItem(product, cartItem.variant);
     } else {
       increaseQuantity(itemKey);
     }
+
     toast.success("Quantity increased successfully!");
   };
 
@@ -106,7 +111,7 @@ const QuantityButtons = ({
         size="icon"
         className={twMerge(buttonClasses)}
         onClick={handleAdd}
-        disabled={!canIncrease}
+        disabled={!isVoucher && !canIncrease}
       >
         <HiPlus />
       </Button>

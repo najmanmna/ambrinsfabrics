@@ -7,6 +7,8 @@ import { orderType } from "./orderType";
 import { orderItemType } from "./orderItem";
 import { bannerType } from "./bannerType";
 import subscribersType from "./subscribersType";
+import { giftVoucherType } from "./giftVoucher";
+import { voucherTemplateType } from "./voucherTemplate";
 
 import { pageType } from "./page";
 
@@ -22,7 +24,9 @@ export const schema: { types: SchemaTypeDefinition[] } = {
 orderItemType,
     bannerType,
     subscribersType,
-    pageType
+    pageType,
+    giftVoucherType,
+    voucherTemplateType,
 
   ],
 };
