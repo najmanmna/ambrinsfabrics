@@ -1,6 +1,7 @@
 "use client";
-
-import { useEffect, useState, useRef } from "react";
+// At the top with other imports
+import { useEffect, useState, useRef, useMemo } from "react"; // Add useEffect
+import { AlertCircle } from "lucide-react"; // Add this for the alert
 import { useRouter } from "next/navigation";
 import useCartStore from "@/store";
 import PriceFormatter from "@/components/PriceFormatter";
@@ -20,7 +21,6 @@ import { DISTRICTS } from "@/constants/SrilankaDistricts";
 import Loading from "@/components/Loading";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useMemo } from "react";
 
 const SHIPPING_QUERY = `*[_type == "settings"][0]{
   deliveryCharges {
@@ -98,6 +98,42 @@ export default function CheckoutPage() {
   } | null>(null);
   const [shippingCost, setShippingCost] = useState<number>(0);
 
+    const vouchersInCart = useMemo(
+    () =>
+      items.filter((item) => (item.product as any).productType === "voucher"),
+    [items]
+  );
+  const hasPhysicalProduct = useMemo(
+    () => items.some((item) => (item.product as any).productType !== "voucher"),
+    [items]
+  );
+  const hasVoucher = vouchersInCart.length > 0;
+
+  const initialVoucherNames = useMemo(() => {
+    const obj: Record<string, { fromName: string; toName: string }> = {};
+    vouchersInCart.forEach((item) => {
+      for (let i = 0; i < item.quantity; i++) {
+        const key = `${item.itemKey}-${i}`;
+        obj[key] = { fromName: "", toName: "" };
+      }
+    });
+    return obj;
+  }, [vouchersInCart]);
+
+  const initialGiftVouchers = useMemo(() => {
+    const obj: Record<string, boolean> = {};
+    vouchersInCart.forEach((item) => {
+      for (let i = 0; i < item.quantity; i++) {
+        const key = `${item.itemKey}-${i}`;
+        obj[key] = false;
+      }
+    });
+    return obj;
+  }, [vouchersInCart]);
+
+  const [voucherNames, setVoucherNames] = useState(initialVoucherNames);
+  const [giftVouchers, setGiftVouchers] = useState(initialGiftVouchers);
+
   useEffect(() => {
     async function fetchShipping() {
       try {
@@ -111,7 +147,19 @@ export default function CheckoutPage() {
   }, []);
 
   useEffect(() => {
-    if (!deliveryCharges || !form.district || !form.city) return;
+    // 1. If no physical products, shipping is always 0.
+    if (!hasPhysicalProduct) {
+      setShippingCost(0);
+      return;
+    }
+
+    // 2. If physical products exist, but no city is selected, cost is 0 (for now)
+    if (!deliveryCharges || !form.district || !form.city) {
+      setShippingCost(0); // Reset to 0 if city is de-selected
+      return;
+    }
+
+    // 3. Original logic: Calculate fee based on selected city
     let fee = deliveryCharges.others;
     if (form.district === "Colombo") {
       if (colomboCityAreas.includes(form.city)) fee = deliveryCharges.colombo;
@@ -120,7 +168,7 @@ export default function CheckoutPage() {
       else fee = deliveryCharges.others;
     }
     setShippingCost(fee);
-  }, [form.district, form.city, deliveryCharges]);
+  }, [form.district, form.city, deliveryCharges, hasPhysicalProduct]); // <-- Add hasPhysicalProduct
 
   useEffect(() => {
     if (items.length === 0) router.push("/cart");
@@ -216,6 +264,19 @@ export default function CheckoutPage() {
         return;
       }
 
+      // Handle Card Payment: Redirect to payment gateway
+      if (form.payment === "CARD") {
+        if (data.paymentUrl) {
+          // This is a full-page redirect to Stripe, PayHere, etc.
+          window.location.href = data.paymentUrl;
+        } else {
+          toast.error("Failed to initialize card payment.");
+          placingRef.current = false;
+          setIsPlacingOrder(false);
+        }
+        return; // Stop execution here
+      }
+
       window.scrollTo(0, 0);
       toast.success("Order placed successfully!");
       sessionStorage.setItem("orderPlaced", "true");
@@ -236,37 +297,16 @@ export default function CheckoutPage() {
     "block w-full px-4 py-3 text-base text-gray-700 bg-white border border-gray-200/80 rounded-md focus:ring-[#A67B5B] focus:border-[#A67B5B] transition-colors";
   const labelStyles = "text-sm font-medium text-gray-600 mb-2 block";
   const cardStyles = "bg-white rounded-lg shadow-sm border border-gray-200/60";
-  const vouchersInCart = useMemo(
-    () =>
-      items.filter((item) => (item.product as any).productType === "voucher"),
-    [items]
-  );
+
+
+  useEffect(() => {
+    if (hasVoucher) {
+      setForm((prev) => ({ ...prev, payment: "CARD" }));
+    }
+  }, [hasVoucher]);
 
   // Initialize voucher names & gift toggles on first render
-  const initialVoucherNames = useMemo(() => {
-    const obj: Record<string, { fromName: string; toName: string }> = {};
-    vouchersInCart.forEach((item) => {
-      for (let i = 0; i < item.quantity; i++) {
-        const key = `${item.itemKey}-${i}`;
-        obj[key] = { fromName: "", toName: "" };
-      }
-    });
-    return obj;
-  }, [vouchersInCart]);
-
-  const initialGiftVouchers = useMemo(() => {
-    const obj: Record<string, boolean> = {};
-    vouchersInCart.forEach((item) => {
-      for (let i = 0; i < item.quantity; i++) {
-        const key = `${item.itemKey}-${i}`;
-        obj[key] = false;
-      }
-    });
-    return obj;
-  }, [vouchersInCart]);
-
-  const [voucherNames, setVoucherNames] = useState(initialVoucherNames);
-  const [giftVouchers, setGiftVouchers] = useState(initialGiftVouchers);
+  
 
   useEffect(() => {
     // Update voucher names only for new keys
@@ -347,65 +387,72 @@ export default function CheckoutPage() {
                       />
                     </div>
                   </div>
-                  <div>
-                    <Label className={labelStyles}>Address *</Label>
-                    <Input
-                      value={form.address}
-                      onChange={(e) =>
-                        setForm({ ...form, address: e.target.value })
-                      }
-                      required
-                      className={inputStyles}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="district" className={labelStyles}>
-                      District *
-                    </Label>
-                    <select
-                      id="district"
-                      className={inputStyles}
-                      value={form.district}
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          district: e.target.value,
-                          city: "",
-                        }))
-                      }
-                      required
-                    >
-                      <option value="">Select District</option>
-                      {Object.keys(DISTRICTS).map((d) => (
-                        <option key={d} value={d}>
-                          {d}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <Label htmlFor="city" className={labelStyles}>
-                      Town / City *
-                    </Label>
-                    <select
-                      id="city"
-                      className={inputStyles}
-                      value={form.city}
-                      onChange={(e) =>
-                        setForm((prev) => ({ ...prev, city: e.target.value }))
-                      }
-                      disabled={!form.district}
-                      required
-                    >
-                      <option value="">Select City</option>
-                      {form.district &&
-                        DISTRICTS[form.district]?.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
+                  {hasPhysicalProduct && (
+                    <>
+                      <div>
+                        <Label className={labelStyles}>Address *</Label>
+                        <Input
+                          value={form.address}
+                          onChange={(e) =>
+                            setForm({ ...form, address: e.target.value })
+                          }
+                          required={hasPhysicalProduct} // Now conditional
+                          className={inputStyles}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="district" className={labelStyles}>
+                          District *
+                        </Label>
+                        <select
+                          id="district"
+                          className={inputStyles}
+                          value={form.district}
+                          onChange={(e) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              district: e.target.value,
+                              city: "",
+                            }))
+                          }
+                          required={hasPhysicalProduct} // Now conditional
+                        >
+                          <option value="">Select District</option>
+                          {Object.keys(DISTRICTS).map((d) => (
+                            <option key={d} value={d}>
+                              {d}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <Label htmlFor="city" className={labelStyles}>
+                          Town / City *
+                        </Label>
+                        <select
+                          id="city"
+                          className={inputStyles}
+                          value={form.city}
+                          onChange={(e) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              city: e.target.value,
+                            }))
+                          }
+                          disabled={!form.district}
+                          required={hasPhysicalProduct} // Now conditional
+                        >
+                          <option value="">Select City</option>
+                          {form.district &&
+                            DISTRICTS[form.district]?.map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                    </>
+                  )}
                   <div>
                     <Label className={labelStyles}>Phone *</Label>
                     <Input
@@ -498,16 +545,20 @@ export default function CheckoutPage() {
                       <span>Subtotal</span>
                       <PriceFormatter amount={subtotal} />
                     </div>
-                    <div className="flex justify-between">
-                      <span>Shipping</span>
-                      <span>
-                        {shippingCost === 0 && form.city
-                          ? "FREE"
-                          : shippingCost > 0
-                            ? `Rs. ${shippingCost}`
-                            : "Select city"}
-                      </span>
-                    </div>
+                  <div className="flex justify-between">
+                    <span>Shipping</span>
+                    <span>
+                      {!hasPhysicalProduct ? (
+                        "N/A" // Case 1: Voucher-only, shipping not applicable
+                      ) : shippingCost > 0 ? (
+                        <PriceFormatter amount={shippingCost} /> // Case 2: Physical item, cost calculated
+                      ) : form.city ? (
+                        "FREE" // Case 3: Physical item, city selected, cost is 0
+                      ) : (
+                        "Select city" // Case 4: Physical item, no city
+                      )}
+                    </span>
+                  </div>
                     <Separator className="my-3" />
                     <div className="flex justify-between font-semibold text-lg text-[#2C3E50]">
                       <span>Total</span>
@@ -524,18 +575,56 @@ export default function CheckoutPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
+                  {hasVoucher && (
+                    <div className="flex items-start gap-3 rounded-lg border border-yellow-300 bg-yellow-50/80 p-3 text-yellow-900">
+                      <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm">
+                        Purchasing a voucher requires online payment. Cash on
+                        Delivery and Bank Transfer are disabled.
+                      </p>
+                    </div>
+                  )}
                   <RadioGroup
-                    defaultValue="COD"
+                    value={form.payment} // <-- CHANGE from defaultValue
                     onValueChange={(v) => setForm({ ...form, payment: v })}
                     className="space-y-4"
                   >
+                    {/* --- ADD CARD OPTION --- */}
                     <div className="flex items-center space-x-3">
-                      <RadioGroupItem value="COD" id="cod" />
-                      <Label htmlFor="cod">Cash on Delivery (COD)</Label>
+                      <RadioGroupItem value="CARD" id="card" />
+                      <Label htmlFor="card" className="font-medium">
+                        Pay by Card (Online)
+                      </Label>
                     </div>
+
+                    {/* --- MODIFY COD OPTION --- */}
                     <div className="flex items-center space-x-3">
-                      <RadioGroupItem value="BANK" id="bank" />
-                      <Label htmlFor="bank">Bank Transfer</Label>
+                      <RadioGroupItem
+                        value="COD"
+                        id="cod"
+                        disabled={hasVoucher} // <-- ADD disabled
+                      />
+                      <Label
+                        htmlFor="cod"
+                        className={hasVoucher ? "text-gray-400" : ""} // <-- ADD className
+                      >
+                        Cash on Delivery (COD)
+                      </Label>
+                    </div>
+
+                    {/* --- MODIFY BANK OPTION --- */}
+                    <div className="flex items-center space-x-3">
+                      <RadioGroupItem
+                        value="BANK"
+                        id="bank"
+                        disabled={hasVoucher} // <-- ADD disabled
+                      />
+                      <Label
+                        htmlFor="bank"
+                        className={hasVoucher ? "text-gray-400" : ""} // <-- ADD className
+                      >
+                        Bank Transfer
+                      </Label>
                     </div>
                   </RadioGroup>
                   {form.payment === "BANK" && (
@@ -546,6 +635,7 @@ export default function CheckoutPage() {
                       </p>
                     </div>
                   )}
+                  {/* Note: You might want a similar message for CARD payments */}
                 </CardContent>
               </Card>
 
