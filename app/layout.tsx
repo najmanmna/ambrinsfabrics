@@ -51,33 +51,34 @@ const RootLayout = async ({ children }: { children: React.ReactNode }) => {
           {children}
 
           {/* Toaster */}
-          <HotToaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                borderRadius: "12px",
-                background: "#2C3E50", // Deep, elegant charcoal
-                color: "#FDFBF6", // Warm, off-white text
-                padding: "16px",
-                fontFamily: "var(--font-serif)", // Assumes you have a serif font variable
-                fontWeight: "500",
-                border: "1px solid #46627f", // Subtle border
-              },
-              success: {
-                iconTheme: {
-                  primary: "#5A7D7C", // Muted, earthy green
-                  secondary: "#FDFBF6",
-                },
-              },
-              error: {
-                iconTheme: {
-                  primary: "#B85C5C", // Soft terracotta red
-                  secondary: "#FDFBF6",
-                },
-              },
-            }}
-          />
+        <HotToaster
+      position="bottom-right" // <--- CHANGED THIS LINE
+      toastOptions={{
+        duration: 4000,
+        style: {
+          borderRadius: "12px",
+          background: "#2C3E50", // Deep, elegant charcoal
+          color: "#FDFBF6", // Warm, off-white text
+          padding: "16px",
+          fontFamily: "var(--font-serif)", // Assumes you have a serif font variable
+          fontWeight: "500",
+          border: "1px solid #46627f", // Subtle border
+        },
+        success: {
+          iconTheme: {
+            primary: "#5A7D7C", // Muted, earthy green
+            secondary: "#FDFBF6",
+          },
+        },
+        error: {
+          iconTheme: {
+            primary: "#B85C5C", // Soft terracotta red
+            secondary: "#FDFBF6",
+          },
+        },
+      }}
+    />
+ 
 
           {/* Sanity Live */}
           <SanityLive />
