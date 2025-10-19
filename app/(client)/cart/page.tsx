@@ -49,17 +49,34 @@ const CartItem = ({ item }: { item: CartItemType }) => {
   return (
     <div className="flex items-start gap-4 py-4">
       {/* Product Image */}
-      {thumbnail && (
-        <Link href={`/product/${product?.slug?.current || ""}`}>
-          <Image
-            src={urlFor(thumbnail).url()}
-            alt={product?.name || "Product image"}
-            width={100}
-            height={125}
-            className="rounded-lg border object-cover aspect-[4/5]"
-          />
-        </Link>
-      )}
+     {/* Product Image */}
+{(product?.productType === "voucher" || thumbnail) && (
+  <div className="flex-shrink-0">
+    {product?.productType === "voucher" ? (
+      <Image
+        src={
+          product?.image ||
+          product?.voucherImage?.asset?.url ||
+          "/gift.png" // default local image
+        }
+        alt={product?.name || "Voucher image"}
+        width={100}
+        height={125}
+        className="rounded-lg border object-cover aspect-[4/5]"
+      />
+    ) : (
+      <Link href={`/product/${product?.slug?.current || ""}`}>
+        <Image
+          src={urlFor(thumbnail).url()}
+          alt={product?.name || "Product image"}
+          width={100}
+          height={125}
+          className="rounded-lg border object-cover aspect-[4/5]"
+        />
+      </Link>
+    )}
+  </div>
+)}
 
       {/* Product Info & Actions */}
       <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">

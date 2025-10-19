@@ -144,10 +144,9 @@ const VoucherCertificate: React.FC<VoucherCertificateProps> = ({ voucher }) => {
             <p style={{ fontSize: "10px", letterSpacing: "2px", textTransform: "uppercase", marginBottom: "5px" }}>
               SINCE 1999
             </p>
+            <img src="/ambrinslogo.png" alt="Logo" style={{ width: "80px", margin: "0 auto 5px" }} />
             <img src="/LogoBlack.png" alt="Logo" style={{ width: "180px", margin: "0 auto 5px" }} />
-            <p style={{ fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: "#6B625C" }}>
-              WE TAKE FABRICS SERIOUSLY
-            </p>
+         
           </div>
 
           {/* Body */}
@@ -188,7 +187,7 @@ const VoucherCertificate: React.FC<VoucherCertificateProps> = ({ voucher }) => {
               </div>
             ))}
 
-            <div style={{ marginTop: "15px", textAlign: "center", backgroundColor: "rgba(255,255,255,0.5)", padding: "5px" }}>
+            <div style={{ marginTop: "5px", textAlign: "center", backgroundColor: "rgba(255,255,255,0.5)", padding: "5px" }}>
               <span style={{ fontSize: "13px", textTransform: "uppercase", letterSpacing: "0.5px", color: "#2C3E50" }}>
                 Voucher Code:
               </span>
@@ -220,7 +219,7 @@ const VoucherCertificate: React.FC<VoucherCertificateProps> = ({ voucher }) => {
             <p style={{ fontSize: "12px", marginBottom: "5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
               Follow us on our socials
             </p>
-            <p style={{ fontSize: "13px", marginBottom: "25px", color: "#A67B5B" }}>ambrinsfabrics.com</p>
+            <p style={{ fontSize: "13px", marginBottom: "25px", color: "#A67B5B" }}>elda.lk</p>
             <p style={{ fontSize: "10px", color: "#6B625C", lineHeight: "1.4" }}>
               Valid for one year from date of purchase<br />
               T&C Apply

@@ -134,163 +134,167 @@ export default function CheckoutPage() {
 
   const total = subtotal + shippingCost;
 
- const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const digits = form.phone.replace(/\D/g, "");
-  if (digits.length < 10) {
-    toast.error("Please enter a valid phone number.");
-    return;
-  }
-
-  if (placingRef.current) return;
-  placingRef.current = true;
-  setIsPlacingOrder(true);
-
-  try {
-    const payload = {
-      form,
-      total,
-      shippingCost,
-      items: items.map((i) => {
-        const price = i.product.price ?? 0;
-        const discount = ((i.product.discount ?? 0) * price) / 100;
-        const finalPrice = price - discount;
-
-        const isVoucher = (i.product as any).productType === "voucher";
-
-        if (isVoucher) {
-          // Create individual voucher entries for each quantity
-          const vouchers = Array.from({ length: i.quantity }).map((_, idx) => {
-            const key = `${i.itemKey}-${idx}`;
-            return {
-              productId: i.product._id,
-              name: i.product.name,
-              price: finalPrice,
-              isGift: giftVouchers[key] || false,
-              fromName: giftVouchers[key] ? voucherNames[key].fromName : null,
-              toName: giftVouchers[key] ? voucherNames[key].toName : null,
-              voucherCode: null, // Backend will generate
-            };
-          });
-
-          return { type: "voucher", vouchers };
-        }
-
-        return {
-          product: {
-            _id: i.product._id,
-            name: i.product.name,
-            slug: i.product.slug?.current,
-            price,
-            discount: i.product.discount ?? 0,
-            finalPrice,
-          },
-          variant: {
-            _key: i.variant._key,
-            color: i.variant.color,
-            availableStock: i.variant.availableStock,
-            images: i.variant.images,
-          },
-          quantity: i.quantity,
-          total: finalPrice * i.quantity,
-        };
-      }),
-    };
-
-    const res = await fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-
-    if (!res.ok) {
-      toast.error(data.error || "Checkout failed.");
-      placingRef.current = false;
-      setIsPlacingOrder(false);
+    const digits = form.phone.replace(/\D/g, "");
+    if (digits.length < 10) {
+      toast.error("Please enter a valid phone number.");
       return;
     }
 
-    window.scrollTo(0, 0);
-    toast.success("Order placed successfully!");
-    sessionStorage.setItem("orderPlaced", "true");
+    if (placingRef.current) return;
+    placingRef.current = true;
+    setIsPlacingOrder(true);
 
-    router.replace(
-      `/success?orderNumber=${data.orderId}&payment=${form.payment}&total=${total}`
-    );
-  } catch (err) {
-    console.error("❌ Checkout error:", err);
-    toast.error("Failed to place order.");
-    placingRef.current = false;
-    setIsPlacingOrder(false);
-  }
-};
+    try {
+      const payload = {
+        form,
+        total,
+        shippingCost,
+        items: items.map((i) => {
+          const price = i.product.price ?? 0;
+          const discount = ((i.product.discount ?? 0) * price) / 100;
+          const finalPrice = price - discount;
 
+          const isVoucher = (i.product as any).productType === "voucher";
+
+          if (isVoucher) {
+            // Create individual voucher entries for each quantity
+            const vouchers = Array.from({ length: i.quantity }).map(
+              (_, idx) => {
+                const key = `${i.itemKey}-${idx}`;
+                return {
+                  productId: i.product._id,
+                  name: i.product.name,
+                  price: finalPrice,
+                  isGift: giftVouchers[key] || false,
+                  fromName: giftVouchers[key]
+                    ? voucherNames[key].fromName
+                    : null,
+                  toName: giftVouchers[key] ? voucherNames[key].toName : null,
+                  voucherCode: null, // Backend will generate
+                };
+              }
+            );
+
+            return { type: "voucher", vouchers };
+          }
+
+          return {
+            product: {
+              _id: i.product._id,
+              name: i.product.name,
+              slug: i.product.slug?.current,
+              price,
+              discount: i.product.discount ?? 0,
+              finalPrice,
+            },
+            variant: {
+              _key: i.variant._key,
+              color: i.variant.color,
+              availableStock: i.variant.availableStock,
+              images: i.variant.images,
+            },
+            quantity: i.quantity,
+            total: finalPrice * i.quantity,
+          };
+        }),
+      };
+
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || "Checkout failed.");
+        placingRef.current = false;
+        setIsPlacingOrder(false);
+        return;
+      }
+
+      window.scrollTo(0, 0);
+      toast.success("Order placed successfully!");
+      sessionStorage.setItem("orderPlaced", "true");
+
+      router.replace(
+        `/success?orderNumber=${data.orderId}&payment=${form.payment}&total=${total}`
+      );
+    } catch (err) {
+      console.error("❌ Checkout error:", err);
+      toast.error("Failed to place order.");
+      placingRef.current = false;
+      setIsPlacingOrder(false);
+    }
+  };
 
   // Custom classNames for UI consistency
   const inputStyles =
     "block w-full px-4 py-3 text-base text-gray-700 bg-white border border-gray-200/80 rounded-md focus:ring-[#A67B5B] focus:border-[#A67B5B] transition-colors";
   const labelStyles = "text-sm font-medium text-gray-600 mb-2 block";
   const cardStyles = "bg-white rounded-lg shadow-sm border border-gray-200/60";
-const vouchersInCart = useMemo(
-  () => items.filter((item) => (item.product as any).productType === "voucher"),
-  [items]
-);
+  const vouchersInCart = useMemo(
+    () =>
+      items.filter((item) => (item.product as any).productType === "voucher"),
+    [items]
+  );
 
-// Initialize voucher names & gift toggles on first render
-const initialVoucherNames = useMemo(() => {
-  const obj: Record<string, { fromName: string; toName: string }> = {};
-  vouchersInCart.forEach((item) => {
-    for (let i = 0; i < item.quantity; i++) {
-      const key = `${item.itemKey}-${i}`;
-      obj[key] = { fromName: "", toName: "" };
-    }
-  });
-  return obj;
-}, [vouchersInCart]);
-
-const initialGiftVouchers = useMemo(() => {
-  const obj: Record<string, boolean> = {};
-  vouchersInCart.forEach((item) => {
-    for (let i = 0; i < item.quantity; i++) {
-      const key = `${item.itemKey}-${i}`;
-      obj[key] = false;
-    }
-  });
-  return obj;
-}, [vouchersInCart]);
-
-const [voucherNames, setVoucherNames] = useState(initialVoucherNames);
-const [giftVouchers, setGiftVouchers] = useState(initialGiftVouchers);
-
-
-useEffect(() => {
-  // Update voucher names only for new keys
-  setVoucherNames((prev) => {
-    const updated: Record<string, { fromName: string; toName: string }> = { ...prev };
+  // Initialize voucher names & gift toggles on first render
+  const initialVoucherNames = useMemo(() => {
+    const obj: Record<string, { fromName: string; toName: string }> = {};
     vouchersInCart.forEach((item) => {
       for (let i = 0; i < item.quantity; i++) {
         const key = `${item.itemKey}-${i}`;
-        if (!updated[key]) updated[key] = { fromName: "", toName: "" };
+        obj[key] = { fromName: "", toName: "" };
       }
     });
-    return updated;
-  });
+    return obj;
+  }, [vouchersInCart]);
 
-  // Update gift toggle only for new keys
-  setGiftVouchers((prev) => {
-    const updated: Record<string, boolean> = { ...prev };
+  const initialGiftVouchers = useMemo(() => {
+    const obj: Record<string, boolean> = {};
     vouchersInCart.forEach((item) => {
       for (let i = 0; i < item.quantity; i++) {
         const key = `${item.itemKey}-${i}`;
-        if (prev[key] === undefined) updated[key] = false;
+        obj[key] = false;
       }
     });
-    return updated;
-  });
-}, [vouchersInCart]);
+    return obj;
+  }, [vouchersInCart]);
 
+  const [voucherNames, setVoucherNames] = useState(initialVoucherNames);
+  const [giftVouchers, setGiftVouchers] = useState(initialGiftVouchers);
+
+  useEffect(() => {
+    // Update voucher names only for new keys
+    setVoucherNames((prev) => {
+      const updated: Record<string, { fromName: string; toName: string }> = {
+        ...prev,
+      };
+      vouchersInCart.forEach((item) => {
+        for (let i = 0; i < item.quantity; i++) {
+          const key = `${item.itemKey}-${i}`;
+          if (!updated[key]) updated[key] = { fromName: "", toName: "" };
+        }
+      });
+      return updated;
+    });
+
+    // Update gift toggle only for new keys
+    setGiftVouchers((prev) => {
+      const updated: Record<string, boolean> = { ...prev };
+      vouchersInCart.forEach((item) => {
+        for (let i = 0; i < item.quantity; i++) {
+          const key = `${item.itemKey}-${i}`;
+          if (prev[key] === undefined) updated[key] = false;
+        }
+      });
+      return updated;
+    });
+  }, [vouchersInCart]);
 
   return (
     <div className="bg-[#FDFBF6]">
@@ -452,9 +456,14 @@ useEffect(() => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {items.map(({ product, variant, quantity, itemKey }) => {
-                    const imageUrl = variant?.images?.[0]
-                      ? urlFor(variant.images[0]).url()
-                      : "/fallback.png";
+                    const isVoucher =
+                      (product as any).productType === "voucher";
+                    const imageUrl = isVoucher
+                      ? (product as any).image || "/voucher-placeholder.jpg"
+                      : variant?.images?.[0]
+                        ? urlFor(variant.images[0]).url()
+                        : "/fallback.png";
+
                     const price = product.price ?? 0;
                     const discount = ((product.discount ?? 0) * price) / 100;
                     const finalPrice = price - discount;
@@ -579,18 +588,18 @@ useEffect(() => {
                   return (
                     <div key={key} className="space-y-2 border-b pb-3">
                       <div className="flex items-center space-x-2">
-                     <input
-  type="checkbox"
-  id={`gift-${key}`}
-  checked={giftVouchers[key]}
-  onChange={(e) =>
-    setGiftVouchers((prev) => ({
-      ...prev,
-      [key]: e.target.checked,
-    }))
-  }
-  className="accent-[#A67B5B]"
-/>
+                        <input
+                          type="checkbox"
+                          id={`gift-${key}`}
+                          checked={giftVouchers[key]}
+                          onChange={(e) =>
+                            setGiftVouchers((prev) => ({
+                              ...prev,
+                              [key]: e.target.checked,
+                            }))
+                          }
+                          className="accent-[#A67B5B]"
+                        />
 
                         <Label
                           htmlFor={`gift-${key}`}
@@ -610,18 +619,21 @@ useEffect(() => {
                             >
                               From Name *
                             </Label>
-                           <Input
-  id={`from-${key}`}
-  value={voucherNames[key].fromName}
-  onChange={(e) =>
-    setVoucherNames((prev) => ({
-      ...prev,
-      [key]: { ...prev[key], fromName: e.target.value },
-    }))
-  }
-  required
-  className={inputStyles}
-/>
+                            <Input
+                              id={`from-${key}`}
+                              value={voucherNames[key].fromName}
+                              onChange={(e) =>
+                                setVoucherNames((prev) => ({
+                                  ...prev,
+                                  [key]: {
+                                    ...prev[key],
+                                    fromName: e.target.value,
+                                  },
+                                }))
+                              }
+                              required
+                              className={inputStyles}
+                            />
                           </div>
                           <div>
                             <Label
@@ -630,18 +642,21 @@ useEffect(() => {
                             >
                               To Name *
                             </Label>
-                           <Input
-  id={`to-${key}`}
-  value={voucherNames[key].toName}
-  onChange={(e) =>
-    setVoucherNames((prev) => ({
-      ...prev,
-      [key]: { ...prev[key], toName: e.target.value },
-    }))
-  }
-  required
-  className={inputStyles}
-/>
+                            <Input
+                              id={`to-${key}`}
+                              value={voucherNames[key].toName}
+                              onChange={(e) =>
+                                setVoucherNames((prev) => ({
+                                  ...prev,
+                                  [key]: {
+                                    ...prev[key],
+                                    toName: e.target.value,
+                                  },
+                                }))
+                              }
+                              required
+                              className={inputStyles}
+                            />
                           </div>
                         </div>
                       )}

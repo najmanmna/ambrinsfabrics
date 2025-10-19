@@ -5,6 +5,7 @@ import WhatIs from "@/components/WhatIs";
 import HeritageStory from "@/components/HeritageStory";
 import VisitStudio from "@/components/VisitStudio";
 import SocialShowcase from "@/components/SocialShowcase";
+import FloatingVoucherCta from "@/components/FloatingVoucherCta";
 
 export default async function Home() {
   return (
@@ -40,6 +41,7 @@ export default async function Home() {
         <HeritageStory />
         <VisitStudio />
         <SocialShowcase />
+        <FloatingVoucherCta />
 
       
       </div>

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useOutsideClick } from "@/hooks";
 import { quickLinksDataMenu } from "@/constants";
 import { ExpandedCategory } from "./MobileMenu";
+import { GiftIcon } from "@heroicons/react/24/outline"; // Importing a gift icon for the CTA
 
 interface SidebarProps {
   isOpen: boolean;
@@ -59,6 +60,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, categories }) => {
               </button>
             </div>
 
+            {/* CTA for Vouchers Page - placed prominently at the top of the scrollable content */}
+            <Link
+              href="/voucher"
+              onClick={onClose}
+              className="flex items-center justify-center gap-3 bg-[#A67B5B] text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-[#8e6e52] transition-colors duration-200"
+            >
+              <GiftIcon className="w-5 h-5" />
+              <span>Gift Vouchers</span>
+            </Link>
+
             {/* Category List */}
             <div className="flex-grow overflow-y-auto pr-2">
               {mainCategories?.length ? (
@@ -70,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, categories }) => {
                     <div key={mainCat._id} className="mb-4">
                       <div
                         onClick={() => handleCategoryClick(mainCat._id!)}
-                        className="flex items-center justify-between cursor-pointer font-serif text-xl text-[#2C3E50] hover:text-[#A67B5B] transition-colors duration-200"
+                        className="flex items-center justify-between cursor-pointer font-serif text-xl text-[#2C3E50] hover:text-[#A67B5B] transition-colors duration-200 py-2" // Added py-2 for better touch target
                       >
                         <span>{mainCat.name}</span>
                         <ChevronDown
@@ -94,10 +105,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, categories }) => {
                             <Link
                               onClick={onClose}
                               href={`/category/${mainCat.slug?.current}`}
-                              className={`hover:text-tech_primary transition text-gray-700 font-medium text-base ${
-                                pathname ===
-                                  `/category/${mainCat.slug?.current}` &&
-                                "text-tech_gold font-semibold"
+                              className={`hover:text-[#A67B5B] transition text-gray-700 font-medium text-base ${
+                                pathname === `/category/${mainCat.slug?.current}`
+                                  ? "text-[#A67B5B] font-semibold"
+                                  : ""
                               }`}
                             >
                               All {mainCat.name}
@@ -109,10 +120,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, categories }) => {
                                   onClick={onClose}
                                   key={sub._id}
                                   href={`/category/${sub.slug?.current}`}
-                                  className={`hover:text-tech_primary transition text-gray-500 text-base ${
-                                    pathname ===
-                                      `/category/${sub.slug?.current}` &&
-                                    "text-tech_gold font-semibold"
+                                  className={`hover:text-[#A67B5B] transition text-gray-500 text-base ${
+                                    pathname === `/category/${sub.slug?.current}`
+                                      ? "text-[#A67B5B] font-semibold"
+                                      : ""
                                   }`}
                                 >
                                   {sub.name}
@@ -136,8 +147,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, categories }) => {
 
             {/* Footer Links */}
             <div className="border-t border-gray-200 pt-4 mt-4 space-y-3">
-            
-
               {/* Store Locator */}
               <Link
                 href="/#studio"
@@ -156,7 +165,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, categories }) => {
                 Care Guide
               </Link>
 
-                {quickLinksDataMenu?.map((item) => (
+              {/* Other Quick Links */}
+              {quickLinksDataMenu?.map((item) => (
                 <Link
                   key={item?.title}
                   href={item?.href}
