@@ -76,7 +76,7 @@ const FloatingVoucherCta: React.FC<FloatingVoucherCtaProps> = ({
         >
           <Link
             href={href}
-            className="flex items-center gap-2 bg-[#A67B5B] text-white px-4 py-2 rounded-full shadow-lg
+            className="flex items-center gap-2 bg-[#A67B5B] text-white px-4 py-4 rounded-full shadow-lg
                        hover:bg-[#8e6e52] hover:shadow-xl transition-all duration-300 transform hover:scale-105
                        text-sm font-semibold whitespace-nowrap"
             aria-label={label}
