@@ -5,6 +5,7 @@ import MobileMenu from "./MobileMenu";
 import SearchBar from "./SearchBar";
 import CartMenu from "../CartMenu";
 
+
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -67,6 +68,7 @@ const Header = () => {
           <SearchBar color="black" />
         </div>
       </div>
+  
     </header>
   );
 };

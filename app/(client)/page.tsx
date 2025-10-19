@@ -6,11 +6,15 @@ import HeritageStory from "@/components/HeritageStory";
 import VisitStudio from "@/components/VisitStudio";
 import SocialShowcase from "@/components/SocialShowcase";
 import FloatingVoucherCta from "@/components/FloatingVoucherCta";
+import DesktopCategoryNav from "@/components/DesktopCategoryNav";
 
 export default async function Home() {
   return (
     <div className="relative">
       <div className="relative">
+          <div className="border-t border-b border-gray-200 mt-12">
+        <DesktopCategoryNav />
+      </div>
         <HomeBanner />
         <WhatIs />
 
