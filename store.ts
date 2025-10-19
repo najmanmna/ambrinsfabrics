@@ -33,6 +33,7 @@ export interface CartVariant {
   color?: string;
   availableStock?: number;
   images?: SanityImage[];
+  variantName?: string;
 }
 
 export interface CartItem {

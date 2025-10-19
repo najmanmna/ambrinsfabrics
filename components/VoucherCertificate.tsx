@@ -210,11 +210,11 @@ const VoucherCertificate: React.FC<VoucherCertificateProps> = ({ voucher }) => {
           <div style={{ textAlign: "center", width: "100%", marginTop: "auto" }}>
             <p style={{ fontSize: "13px", lineHeight: "1.5", marginBottom: "15px" }}>
               ORCHARD SHOPPING COMPLEX<br />
-              (GROUND FLOOR)<br />
-              7/5 GALLE ROAD, COLOMBO 06
+              (3RD FLOOR)<br />
+              7 3/2 B GALLE ROAD, COLOMBO 06
             </p>
             <p style={{ fontSize: "14px", marginBottom: "15px", fontWeight: "bold" }}>
-              011 2 553 633 | 0777 367 403
+              011 2 553 633 | 0777 21 2229
             </p>
             <p style={{ fontSize: "12px", marginBottom: "5px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
               Follow us on our socials

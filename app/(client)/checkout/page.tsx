@@ -98,7 +98,7 @@ export default function CheckoutPage() {
   } | null>(null);
   const [shippingCost, setShippingCost] = useState<number>(0);
 
-    const vouchersInCart = useMemo(
+  const vouchersInCart = useMemo(
     () =>
       items.filter((item) => (item.product as any).productType === "voucher"),
     [items]
@@ -182,6 +182,8 @@ export default function CheckoutPage() {
 
   const total = subtotal + shippingCost;
 
+  // In your CheckoutPage.tsx component
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -204,11 +206,9 @@ export default function CheckoutPage() {
           const price = i.product.price ?? 0;
           const discount = ((i.product.discount ?? 0) * price) / 100;
           const finalPrice = price - discount;
-
           const isVoucher = (i.product as any).productType === "voucher";
 
           if (isVoucher) {
-            // Create individual voucher entries for each quantity
             const vouchers = Array.from({ length: i.quantity }).map(
               (_, idx) => {
                 const key = `${i.itemKey}-${idx}`;
@@ -218,17 +218,17 @@ export default function CheckoutPage() {
                   price: finalPrice,
                   isGift: giftVouchers[key] || false,
                   fromName: giftVouchers[key]
-                    ? voucherNames[key].fromName
+                    ? voucherNames[key]?.fromName // Added safe navigation
                     : null,
-                  toName: giftVouchers[key] ? voucherNames[key].toName : null,
-                  voucherCode: null, // Backend will generate
+                  toName: giftVouchers[key] ? voucherNames[key]?.toName : null, // Added safe navigation
+                  voucherCode: null,
                 };
               }
             );
-
             return { type: "voucher", vouchers };
           }
 
+          // (Rest of your item mapping logic...)
           return {
             product: {
               _id: i.product._id,
@@ -236,13 +236,16 @@ export default function CheckoutPage() {
               slug: i.product.slug?.current,
               price,
               discount: i.product.discount ?? 0,
-              finalPrice,
+              // --- IMPORTANT: pass finalPrice ---
+              finalPrice: finalPrice,
             },
             variant: {
               _key: i.variant._key,
               color: i.variant.color,
               availableStock: i.variant.availableStock,
               images: i.variant.images,
+              // --- IMPORTANT: pass variantName ---
+              variantName: i.variant?.variantName,
             },
             quantity: i.quantity,
             total: finalPrice * i.quantity,
@@ -264,23 +267,15 @@ export default function CheckoutPage() {
         return;
       }
 
-      // Handle Card Payment: Redirect to payment gateway
-      if (form.payment === "CARD") {
-        if (data.paymentUrl) {
-          // This is a full-page redirect to Stripe, PayHere, etc.
-          window.location.href = data.paymentUrl;
-        } else {
-          toast.error("Failed to initialize card payment.");
-          placingRef.current = false;
-          setIsPlacingOrder(false);
-        }
-        return; // Stop execution here
-      }
+      // --- MODIFIED LOGIC ---
+      // This block now runs for ALL successful responses,
+      // including CARD, COD, and BANK.
 
       window.scrollTo(0, 0);
       toast.success("Order placed successfully!");
       sessionStorage.setItem("orderPlaced", "true");
 
+      // This will now correctly pass "CARD" as the payment param
       router.replace(
         `/success?orderNumber=${data.orderId}&payment=${form.payment}&total=${total}`
       );
@@ -291,13 +286,11 @@ export default function CheckoutPage() {
       setIsPlacingOrder(false);
     }
   };
-
   // Custom classNames for UI consistency
   const inputStyles =
     "block w-full px-4 py-3 text-base text-gray-700 bg-white border border-gray-200/80 rounded-md focus:ring-[#A67B5B] focus:border-[#A67B5B] transition-colors";
   const labelStyles = "text-sm font-medium text-gray-600 mb-2 block";
   const cardStyles = "bg-white rounded-lg shadow-sm border border-gray-200/60";
-
 
   useEffect(() => {
     if (hasVoucher) {
@@ -306,7 +299,6 @@ export default function CheckoutPage() {
   }, [hasVoucher]);
 
   // Initialize voucher names & gift toggles on first render
-  
 
   useEffect(() => {
     // Update voucher names only for new keys
@@ -545,20 +537,20 @@ export default function CheckoutPage() {
                       <span>Subtotal</span>
                       <PriceFormatter amount={subtotal} />
                     </div>
-                  <div className="flex justify-between">
-                    <span>Shipping</span>
-                    <span>
-                      {!hasPhysicalProduct ? (
-                        "N/A" // Case 1: Voucher-only, shipping not applicable
-                      ) : shippingCost > 0 ? (
-                        <PriceFormatter amount={shippingCost} /> // Case 2: Physical item, cost calculated
-                      ) : form.city ? (
-                        "FREE" // Case 3: Physical item, city selected, cost is 0
-                      ) : (
-                        "Select city" // Case 4: Physical item, no city
-                      )}
-                    </span>
-                  </div>
+                    <div className="flex justify-between">
+                      <span>Shipping</span>
+                      <span>
+                        {!hasPhysicalProduct ? (
+                          "N/A" // Case 1: Voucher-only, shipping not applicable
+                        ) : shippingCost > 0 ? (
+                          <PriceFormatter amount={shippingCost} /> // Case 2: Physical item, cost calculated
+                        ) : form.city ? (
+                          "FREE" // Case 3: Physical item, city selected, cost is 0
+                        ) : (
+                          "Select city" // Case 4: Physical item, no city
+                        )}
+                      </span>
+                    </div>
                     <Separator className="my-3" />
                     <div className="flex justify-between font-semibold text-lg text-[#2C3E50]">
                       <span>Total</span>

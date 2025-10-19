@@ -48,7 +48,7 @@ const CartItem = ({ item }: { item: CartItemType }) => {
 
   return (
     <div className="flex items-start gap-4 py-4">
-      {/* Product Image */}
+ 
      {/* Product Image */}
 {(product?.productType === "voucher" || thumbnail) && (
   <div className="flex-shrink-0">
