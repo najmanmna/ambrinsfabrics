@@ -681,7 +681,7 @@ export default function CheckoutPage() {
                         <input
                           type="checkbox"
                           id={`gift-${key}`}
-                          checked={giftVouchers[key]}
+                          checked={giftVouchers[key] || false}
                           onChange={(e) =>
                             setGiftVouchers((prev) => ({
                               ...prev,
@@ -711,7 +711,7 @@ export default function CheckoutPage() {
                             </Label>
                             <Input
                               id={`from-${key}`}
-                              value={voucherNames[key].fromName}
+                              value={voucherNames[key]?.fromName || ""}
                               onChange={(e) =>
                                 setVoucherNames((prev) => ({
                                   ...prev,
@@ -734,7 +734,7 @@ export default function CheckoutPage() {
                             </Label>
                             <Input
                               id={`to-${key}`}
-                              value={voucherNames[key].toName}
+                              value={voucherNames[key]?.toName || ""}
                               onChange={(e) =>
                                 setVoucherNames((prev) => ({
                                   ...prev,
