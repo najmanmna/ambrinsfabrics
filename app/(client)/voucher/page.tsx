@@ -174,8 +174,7 @@ export default function VouchersPage() {
                 3. Download & Gift
               </h3>
               <p className="text-gray-600">
-                Instantly download a PDF to print at home or send as an email
-                attachment.
+                Instantly download a PDF and gift it to your loved ones.
               </p>
             </div>
           </div>

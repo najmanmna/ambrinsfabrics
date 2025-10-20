@@ -226,6 +226,9 @@ xxxxxx Bank Dehiwala`;
               You can redeem these vouchers online at checkout or in-person at
               our store.
             </p>
+             <p className="text-sm text-gray-700 mb-4">
+              Valid fot 1 year from the date of purchase.
+            </p>
             <div className="space-y-4 flex flex-col items-center">
               {vouchers.map((v) => (
                 <VoucherCertificate key={v.code} voucher={v} />
