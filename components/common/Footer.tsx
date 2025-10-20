@@ -13,7 +13,7 @@ const quickLinks = [
   { href: "/", title: "Home" },
   { href: "/about", title: "About Us" },
   { href: "/care-guide", title: "Care Guide" },
-  { href: "/terms-conditions", title: "Terms & Conditions" },
+  { href: "/terms-and-conditions", title: "Terms & Conditions" },
   { href: "/refund-policy", title: "Refund Policy" },
   { href: "/privacy-policy", title: "Privacy Policy" },
 ];
@@ -121,7 +121,7 @@ const Footer = () => {
           <p className="mt-1 text-xs">
             Designed & Developed by{" "}
             <a
-              href="/"
+              href="https://ahamedwebstudio.com"
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-white hover:text-tech_gold transition-colors"

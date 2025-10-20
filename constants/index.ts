@@ -42,6 +42,6 @@ export const quickLinksData = [
   { title: "About us", href: "/about" },
 
   // { title: "Contact us", href: "/contact" },
-  { title: "Refund & Return Policy", href: "/return-and-refund-policy" },];
+  { title: "Refund & Return Policy", href: "/refund-policy" },];
   
 
