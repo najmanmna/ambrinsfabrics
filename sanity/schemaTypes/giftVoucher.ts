@@ -3,7 +3,7 @@ import { defineType, defineField } from "sanity";
 
 export const giftVoucherType = defineType({
   name: "voucher",
-  title: "Voucher",
+  title: "Vouchers Purchased",
   type: "document",
   fields: [
     defineField({

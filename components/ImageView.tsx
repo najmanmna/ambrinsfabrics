@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { urlFor } from "@/sanity/lib/image";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion"; // Corrected import from "motion/react" to "framer-motion"
 import { X } from "lucide-react";
 import {
   Carousel,
@@ -48,7 +48,11 @@ export default function ImageView({ images = [], isStock }: Props) {
 
   return (
     <>
-      <div className="w-full md:w-2/5 flex flex-col gap-4">
+      {/* Main container for images - Applied sticky styles here */}
+      <div
+        className="w-full md:w-2/5 md:h-[calc(100vh-6rem)] md:sticky md:top-24 md:self-start flex flex-col gap-4 overflow-hidden"
+        style={{ zIndex: 10 }} // Ensure it stays above other content if needed
+      >
         {/* Main image */}
         <AnimatePresence mode="wait">
           <motion.div
@@ -57,7 +61,7 @@ export default function ImageView({ images = [], isStock }: Props) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="border rounded-md overflow-hidden cursor-zoom-in"
+            className="border rounded-md overflow-hidden cursor-zoom-in flex-grow flex items-center justify-center relative" // flex-grow to take available space
             onClick={() =>
               openModal(images.findIndex((i) => i._key === active?._key))
             }
@@ -69,17 +73,23 @@ export default function ImageView({ images = [], isStock }: Props) {
                 zoomScale={isMobile ? 1.1 : 1.1}
                 zoomType={isMobile ? "click" : "hover"}
                 zoomPreload
-                className={`object-contain w-full max-h-[500px] ${
+                // Adjusted object-contain to be more flexible within flex-grow container
+                className={`w-full h-full object-contain ${
                   isStock === 0 ? "opacity-50" : ""
                 }`}
               />
+            )}
+            {isStock === 0 && (
+              <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center text-lg font-bold text-red-600">
+                Out of Stock
+              </div>
             )}
           </motion.div>
         </AnimatePresence>
 
         {/* Thumbnails below */}
         {images.length > 1 && (
-          <div className="flex justify-center gap-2 mt-3 flex-wrap">
+          <div className="flex justify-center gap-2 mt-3 flex-wrap p-2 bg-white rounded-md border">
             {images.map((img, idx) => (
               <button
                 key={`${img._key}-${idx}`}

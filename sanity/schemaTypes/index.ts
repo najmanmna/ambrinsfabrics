@@ -16,17 +16,18 @@ import { settingsType } from "./settings";
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
-      settingsType,
+      
     blockContentType,
     categoryType,
     productType,
     orderType,
 orderItemType,
-    bannerType,
-    subscribersType,
-    pageType,
+    // bannerType,
+    // subscribersType,
+    // pageType,
     giftVoucherType,
     voucherTemplateType,
+    settingsType,
 
   ],
 };
