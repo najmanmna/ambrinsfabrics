@@ -51,7 +51,7 @@ const AboutPage = () => {
           {/* Image Placeholder */}
           <div className="w-full aspect-video bg-[#D8CEC6] rounded-lg overflow-hidden shadow-lg">
             <Image
-              src="/img4.jpeg" // Replace with an actual image of your studio or a beautiful fabric display
+              src="/aboutimg1.jpeg" // Replace with an actual image of your studio or a beautiful fabric display
               alt="ELDA Studio in Colombo"
               width={800}
               height={500}
@@ -144,7 +144,7 @@ const AboutPage = () => {
           {/* Image Placeholder */}
           <div className="w-full aspect-video bg-[#D8CEC6] rounded-lg overflow-hidden shadow-lg">
             <Image
-              src="/heri3.png" // Replace with an image showcasing unique block prints
+              src="/aboutimg2.jpeg" // Replace with an image showcasing unique block prints
               alt="Unique Block Prints"
               width={800}
               height={500}
