@@ -26,6 +26,15 @@ const AboutPage = () => {
       <div className="bg-[#EEE8DD] py-20 sm:py-28 text-center border-b border-[#D7C8BB]"> {/* Lighter background, subtle border */}
         <Container>
           <motion.div initial="hidden" animate="visible" variants={sectionVariants}>
+            <div className="w-40 flex mx-auto  ">
+            <Image
+              src="/ambrinslogo.png" // Replace with an image showcasing unique block prints
+              alt="Unique Block Prints"
+              width={800}
+              height={500}
+              className="w-full h-full object-contain"
+            />
+          </div>
            
             <h1 className="font-playfair text-5xl sm:text-7xl font-bold text-[#2C3E50] leading-tight">
               Welcome to ELDA

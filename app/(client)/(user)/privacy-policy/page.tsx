@@ -176,7 +176,7 @@ const PrivacyPolicyPage = () => {
             personal information, please contact us:
           </p>
           <p className="mt-4 text-xl text-[#A67B5B] font-semibold flex items-center justify-center gap-2">
-            <Mail size={20} /> <a href="mailto:info@elda.lk" className="hover:underline">info@elda.lk</a>
+            <Mail size={20} /> <a href="mailto:ambrins.fabricstore@gmail.com" className="hover:underline">ambrins.fabricstore@gmail.com</a>
           </p>
         </motion.div>
       </Container>

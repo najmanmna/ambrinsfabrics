@@ -258,7 +258,7 @@ const TermsAndConditionsPage = () => {
             customer support team.
           </p>
           <p className="mt-4 text-xl text-[#A67B5B] font-semibold">
-            <a href="mailto:info@elda.lk" className="hover:underline">info@elda.lk</a>
+            <a href="mailto:ambrins.fabricstore@gmail.com" className="hover:underline">ambrins.fabricstore@gmail.com</a>
           </p>
         </motion.div>
       </Container>

@@ -4,13 +4,35 @@ import { backendClient } from "@/sanity/lib/backendClient";
 import { v4 as uuidv4 } from "uuid";
 import { sendSubscribeEmail } from "@/lib/sendSubscribeEmail";
 
-// --- REMOVED STRIPE IMPORTS ---
 // Add this near your imports
-interface VoucherItem {
+interface VoucherItemForEmail { // Renamed to avoid confusion with internal Sanity types
   code: string;
   toName: string;
   // Add other properties if needed by the map
 }
+
+interface IncomingCartVoucher {
+  productId: string; // The _id of the product that represents the voucher
+  isGift: boolean;
+  fromName?: string;
+  toName?: string;
+  price: number; // The value of the voucher
+}
+
+interface ProcessedVoucherForSanity {
+  _id: string; // Will be the _id of the new voucher document
+  _type: "voucher";
+  code: string;
+  isGift: boolean;
+  fromName?: string;
+  toName?: string;
+  product: { _type: "reference", _ref: string }; // Reference to the product document (e.g., "Gift Voucher")
+  price: number; // The value of the voucher
+  orderNumber?: string; // Will be added later
+  redeemed: boolean;
+  createdAt: string;
+}
+
 export const runtime = "nodejs";
 
 // ------------------ MAIN HANDLER ------------------ //
@@ -31,16 +53,26 @@ export async function POST(req: Request) {
     );
     const hasPhysicalProducts = normalItems.length > 0;
 
-    const voucherItems = items
+    // ✅ IMPORTANT: Generate _id for each voucher document NOW
+    const processedVouchers: ProcessedVoucherForSanity[] = items
       .filter((it: any) => it.type === "voucher")
-      .flatMap((it: any) =>
-        it.vouchers.map((v: any) => ({
-          ...v,
-          voucherCode: `VCHR-${uuidv4().split("-")[0].toUpperCase()}`,
-          _id: uuidv4(),
-          createdAt: new Date().toISOString(),
-          product: { _type: "reference", _ref: v.productId },
-        }))
+      .flatMap((it: { vouchers: IncomingCartVoucher[] }) =>
+        it.vouchers.map((v: IncomingCartVoucher) => {
+          const voucherDocId = uuidv4(); // Generate unique _id for the Sanity voucher document
+          return {
+            _id: voucherDocId, // Use this for Sanity document
+            _type: "voucher",
+            code: `VCHR-${uuidv4().split("-")[0].toUpperCase()}`, // Generate unique code
+            isGift: v.isGift,
+            fromName: v.fromName || "",
+            toName: v.toName || "",
+            product: { _type: "reference", _ref: v.productId }, // Reference to the "Gift Voucher" product
+            price: v.price, // Value of the voucher
+            redeemed: false,
+            createdAt: new Date().toISOString(),
+            // orderNumber will be added when creating the order document
+          };
+        })
       );
 
     // --- Updated Validation ---
@@ -52,7 +84,7 @@ export async function POST(req: Request) {
       items.length === 0
     ) {
       return NextResponse.json(
-        { error: "Missing required customer details" },
+        { error: "Missing required customer details or empty cart" },
         { status: 400 }
       );
     }
@@ -72,13 +104,13 @@ export async function POST(req: Request) {
     const productIds = normalItems.map((it: any) => it.product._id);
     const freshProducts = await backendClient.fetch(
       `*[_type == "product" && _id in $ids]{
-        _id, _rev, name,
-        variants[] {
-          _key, variantName, openingStock, stockOut,
-          "availableStock": openingStock - coalesce(stockOut, 0),
-          images
-        }
-      }`,
+        _id, _rev, name,
+        variants[] {
+          _key, variantName, openingStock, stockOut,
+          "availableStock": openingStock - coalesce(stockOut, 0),
+          images
+        }
+      }`,
       { ids: productIds }
     );
 
@@ -112,9 +144,6 @@ export async function POST(req: Request) {
       it.product._rev = fresh._rev;
     }
 
-    // --- REMOVED PAYMENT LOGIC SPLIT ---
-    // All payment methods are now handled the same way.
-
     const orderId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
 
     // ✅ Duplicate check
@@ -131,25 +160,23 @@ export async function POST(req: Request) {
         { error: "Duplicate order detected" },
         { status: 429 }
       );
-      
-    // --- Smart Status (for future use) ---
-    // For now, CARD payments are treated as "processing" since we are simulating success.
-    // COD/BANK are "pending" confirmation.
+
+    // --- Smart Status ---
+    // For now, assume "CARD" is processed, others are pending.
     let orderStatus = "pending";
     if (form.payment === "CARD") {
-      orderStatus = "processing"; 
+      orderStatus = "processing";
     }
 
     // ✅ Construct order doc
-    const order = {
+    const orderDoc = { // Renamed to avoid conflict with `order` in tx.create
       _type: "order",
       orderNumber: orderId,
-      status: orderStatus, // Use the smart status
+      status: orderStatus,
       orderDate: new Date().toISOString(),
       customerName: `${form.firstName} ${form.lastName}`,
       phone: form.phone,
       email: form.email || "",
-      // Only add address if physical products were ordered
       address: hasPhysicalProducts
         ? {
             district: form.district,
@@ -158,7 +185,7 @@ export async function POST(req: Request) {
             notes: form.notes || "",
           }
         : undefined,
-      paymentMethod: form.payment, // This will correctly save "CARD", "COD", or "BANK"
+      paymentMethod: form.payment,
       items: normalItems.map((it: any) => {
         const fresh = freshProducts.find((p: any) => p._id === it.product._id);
         const matchedVariant = fresh?.variants?.find(
@@ -189,16 +216,11 @@ export async function POST(req: Request) {
               : undefined,
         };
       }),
-      vouchers: voucherItems.map((v: any) => ({
-        _type: "voucher", // This assumes 'vouchers' is an array of 'voucher' types in your 'order' schema
-        _key: v._id,
-        code: v.voucherCode,
-        isGift: v.isGift,
-        fromName: v.fromName || "",
-        toName: v.toName || "",
-        product: v.product,
-        price: v.price,
-        redeemed: false,
+      // ✅ CORRECTED: References to the created voucher documents
+      purchasedVouchers: processedVouchers.map((v) => ({
+        _type: "reference",
+        _ref: v._id, // This is the _id we generated for the voucher document
+        _key: uuidv4(), // Each item in an array needs a _key
       })),
       subtotal: items.reduce((acc: number, it: any) => {
         if (it.type === "voucher") {
@@ -214,9 +236,13 @@ export async function POST(req: Request) {
       total,
     };
 
-    // ✅ Transaction — Create order + update stock
-    const tx = backendClient.transaction().create(order);
+    // ✅ Transaction — Create order + update stock + create vouchers
+    const tx = backendClient.transaction();
 
+    // 1. Create the order document (with references to vouchers)
+    tx.create(orderDoc); // Use the renamed orderDoc
+
+    // 2. Patch stock for normal items
     normalItems.forEach((it: any) => {
       const variantKey = it.variant?._key;
       if (!variantKey) throw new Error("Variant key missing for stock update");
@@ -228,59 +254,44 @@ export async function POST(req: Request) {
       );
     });
 
-    // Create voucher docs separately
-    voucherItems.forEach((v: any) => {
+    // 3. Create individual voucher documents
+    processedVouchers.forEach((v: ProcessedVoucherForSanity) => {
       tx.create({
-        _type: "voucher",
-        code: v.voucherCode,
-        isGift: v.isGift,
-        fromName: v.fromName || "",
-        toName: v.toName || "",
-        product: v.product,
-        price: v.price,
+        ...v, // Use the pre-constructed voucher object
         orderNumber: orderId, // Link to the order
-        redeemed: false,
-        createdAt: v.createdAt,
       });
     });
 
     await tx.commit();
 
     // ✅ Send emails asynchronously
-   // ... inside your API's try block ...
+    if (form.email) {
+      sendSubscribeEmail({
+        to: form.email,
+        subject: `Your Order ${orderId} is Confirmed`,
+        html: `Your order has been placed successfully. ${
+          processedVouchers.length > 0
+            ? `Your vouchers: ${processedVouchers // Changed to processedVouchers
+                .map((v: ProcessedVoucherForSanity) => `${v.code} (to: ${v.toName || "Self"})`)
+                .join(", ")}`
+            : ""
+        }`,
+      }).catch(console.error);
+    }
 
-  // ✅ Send emails asynchronously
-  if (form.email) {
     sendSubscribeEmail({
-      to: form.email,
-      subject: `Your Order ${orderId} is Confirmed`,
-      // --- FIX IS HERE ---
-      html: `Your order has been placed successfully. ${
-        voucherItems.length > 0
-          ? `Your vouchers: ${voucherItems
-              .map((v: VoucherItem) => `${v.code} (to: ${v.toName || "Self"})`)
-              .join(", ")}`
-          : ""
-      }`,
+      to: "mnanajman@gmail.com", // This should be an env variable
+      subject: `New Order ${orderId} Placed (${form.payment})`,
+      html: `Order #${orderId} placed by ${form.firstName} ${
+        form.lastName
+      }. Vouchers: ${processedVouchers // Changed to processedVouchers
+        .map((v: ProcessedVoucherForSanity) => `${v.code} (to: ${v.toName || "Self"})`)
+        .join(", ")}`,
     }).catch(console.error);
-  }
-
-  sendSubscribeEmail({
-    to: "mnanajman@gmail.com", // This should be an env variable
-    subject: `New Order ${orderId} Placed (${form.payment})`,
-    // --- FIX IS HERE ---
-    html: `Order #${orderId} placed by ${form.firstName} ${
-      form.lastName
-    }. Vouchers: ${voucherItems
-      .map((v: VoucherItem) => `${v.code} (to: ${v.toName || "Self"})`)
-      .join(", ")}`,
-  }).catch(console.error);
-
-  // ... rest of your function ...
 
     // This response is now the same for all payment methods
     return NextResponse.json(
-      { message: "Order placed successfully", orderId, vouchers: voucherItems },
+      { message: "Order placed successfully", orderId, vouchers: processedVouchers }, // Return processedVouchers
       { status: 200 }
     );
   } catch (err) {
