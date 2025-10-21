@@ -1,4 +1,3 @@
-// schemas/voucher.ts
 import { defineType, defineField } from "sanity";
 
 export const giftVoucherType = defineType({
@@ -32,10 +31,11 @@ export const giftVoucherType = defineType({
       hidden: ({ parent }) => !parent?.isGift,
     }),
     defineField({
-      name: "product",
-      title: "Product",
+      name: "voucherTemplate", // Changed from 'product' to 'voucherTemplate'
+      title: "Voucher Template", // Updated title
       type: "reference",
-      to: [{ type: "product" }],
+      to: [{ type: "voucherTemplate" }], // Corrected reference type
+      description: "Links to the voucher template this was purchased from (e.g., 'Rs. 5000 Voucher')."
     }),
     defineField({
       name: "price",
@@ -67,6 +67,14 @@ export const giftVoucherType = defineType({
     select: {
       title: "code",
       subtitle: "toName",
+      price: 'price',
+      templateTitle: 'voucherTemplate.title'
     },
+    prepare({ title, subtitle, price, templateTitle }) {
+        return {
+            title: title || 'No Code',
+            subtitle: `${templateTitle || `Rs. ${price}`} ${subtitle ? `(To: ${subtitle})` : ''}`
+        }
+    }
   },
 });
