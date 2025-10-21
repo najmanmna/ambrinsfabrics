@@ -33,7 +33,7 @@ export const orderType = defineType({
         ],
       },
       initialValue: "pending",
-      // readOnly: ({ parent }) => parent?.status === "cancelled", // This is commented out to allow status changes
+      readOnly: ({ parent }) => parent?.status === "cancelled", // This is commented out to allow status changes
     }),
     defineField({
       name: "orderDate",
