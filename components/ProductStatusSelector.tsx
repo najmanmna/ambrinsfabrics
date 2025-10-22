@@ -9,6 +9,7 @@ import img1 from "../public/img1.jpeg";
 import img2 from "../public/img2.jpeg";
 import img3 from "../public/img3.jpeg";
 import img4 from "../public/img4.jpeg";
+import sectionBreak from "../public/sectionBreak.png";
 
 // 🪷 Motif border image (tileable PNG)
 import borderTile from "../public/line-motif.png";
@@ -29,13 +30,21 @@ const ProductStatusSelector = () => {
   };
 
   return (
-    <Container className="py-20 mb-10">
+    <div className="py-20  mb-10 relative ">
+
+         <div className="absolute -bottom-6  w-2xl sm:w-full overflow-hidden">
+        <img
+          src={sectionBreak.src}
+          alt="Section divider flipped"
+          className="w-full h-auto object-cover rotate-180"
+        />
+      </div>
       {/* Heading */}
       <div className="text-center mb-12">
         <h2 className="text-3xl uppercase sm:text-4xl font-playfair font-semibold text-tech_primary">
           Explore Our Collection
         </h2>
-        <p className="text-tech_gold mt-2 text-lg sm:text-xl">
+        <p className="text-tech_gold mx-10 mt-2 text-lg sm:text-xl">
           Discover centuries old craft for the modern life.
         </p>
       </div>
@@ -124,7 +133,7 @@ const ProductStatusSelector = () => {
           ))}
         </div>
       </div>
-    </Container>
+    </div>
   );
 };
 

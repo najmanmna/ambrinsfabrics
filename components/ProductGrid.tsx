@@ -66,15 +66,15 @@ const ProductGrid = () => {
   const numberOfSkeletons = 10; // Matches your query limit [0...10]
 
   return (
-    <div className="relative my-15">
-      <div className="absolute -top-6 w-full overflow-hidden">
+    <div className="relative py-15">
+      <div className="absolute  sm:-top-2 w-2xl sm:w-full overflow-hidden">
         <img
           src={sectionBreak.src}
           alt="Section divider flipped"
           className="w-full h-auto object-cover rotate-180"
         />
       </div>
-      <div className="absolute -bottom-4 w-full overflow-hidden">
+      <div className="absolute bottom-8 sm:bottom-2 w-2xl sm:w-full overflow-hidden">
         <img
           src={sectionBreak.src}
           alt="Section divider flipped"

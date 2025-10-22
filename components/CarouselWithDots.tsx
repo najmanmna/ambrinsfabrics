@@ -60,7 +60,7 @@ const CarouselWithZoom = () => {
   };
 
   return (
-    <Container className="w-full pt-28 sm:pt-4 lg:col-span-3">
+    <Container className="w-full pt-6 sm:pt-4 lg:col-span-3">
       <div className="relative w-full h-[50vh] sm:h-[85vh] overflow-hidden rounded-lg shadow-md">
         <AnimatePresence>
           {localBanners.map((item, index) => {

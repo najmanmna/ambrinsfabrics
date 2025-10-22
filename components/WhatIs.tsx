@@ -47,7 +47,7 @@ const WhatIs = () => {
             Lanka, so you can experience their beauty in your everyday life.
           </p>
 
-          <div className="mt-6 mx-10 flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
+          <div className="mt-6 mx-10 sm:mx-0 flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
             <a
               href="/about"
               className="px-6 py-3 bg-tech_primary text-white font-semibold rounded shadow hover:bg-tech_gold hover:text-primary transition-colors"

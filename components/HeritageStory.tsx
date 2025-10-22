@@ -36,21 +36,15 @@ const heritagePoints = [
 const HeritageStory = () => {
   return (
     <div className="relative ">
-      <div className="absolute -top-6  w-full overflow-hidden">
+   
+      <div className="absolute -bottom-4 w-2xl sm:w-full overflow-hidden z-20">
         <img
           src={sectionBreak.src}
           alt="Section divider flipped"
-          className="w-full h-auto object-cover rotate-180"
-        />
-      </div>
-      <div className="absolute -bottom-4 w-full overflow-hidden z-20">
-        <img
-          src={sectionBreak.src}
-          alt="Section divider flipped"
-          className="w-full h-auto object-cover rotate-180"
+          className="full h-auto object-cover rotate-180"
         />
       </div>{" "}
-      <Container className="py-32 ">
+      <Container className="py-15 sm:py-24 ">
         {/* Heading */}
         <div className="text-center mb-16 ">
           <h2 className="text-3xl sm:text-4xl font-playfair font-semibold text-tech_primary">

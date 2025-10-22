@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useOutsideClick } from "@/hooks";
 import { quickLinksDataMenu } from "@/constants";
 import { ExpandedCategory } from "./MobileMenu";
-import { GiftIcon } from "@heroicons/react/24/outline"; // Importing a gift icon for the CTA
+import { GiftIcon } from "@heroicons/react/24/outline";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -37,7 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, categories }) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 bg-black/40 z-40"
+          className="fixed h-screen inset-0 bg-black/40 z-40"
         >
           <motion.div
             ref={sidebarRef}
@@ -45,10 +45,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, categories }) => {
             animate={{ x: "0%" }}
             exit={{ x: "-100%" }}
             transition={{ type: "tween", duration: 0.4, ease: "easeOut" }}
-            className="fixed top-0 left-0 sm:w-full max-w-sm bg-[#FDFBF6] z-50 h-screen p-6 shadow-2xl flex flex-col gap-8"
+            className="fixed top-0 left-0 sm:w-full max-w-sm bg-[#FDFBF6] z-50 h-screen p-6 shadow-2xl flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-6">
               <h2 className="font-serif text-2xl font-medium text-[#2C3E50]">
                 Menu
               </h2>
@@ -60,7 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, categories }) => {
               </button>
             </div>
 
-            {/* CTA for Vouchers Page - placed prominently at the top of the scrollable content */}
+            {/* CTA for Vouchers */}
             <Link
               href="/voucher"
               onClick={onClose}
@@ -70,102 +70,106 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, categories }) => {
               <span>Gift Vouchers</span>
             </Link>
 
-            {/* Category List */}
-            <div className="flex-grow overflow-y-auto pr-2">
-              {mainCategories?.length ? (
-                mainCategories.map((mainCat) => {
-                  const subcategories = getSubcategories(mainCat._id!);
-                  const isActive = activeCategory === mainCat._id;
+            {/* Scrollable Section for Categories + Store/Care */}
+            <div className="flex-grow overflow-y-auto mt-6 pr-5 space-y-6">
+              {/* Category List */}
+              <div>
+                {mainCategories?.length ? (
+                  mainCategories.map((mainCat) => {
+                    const subcategories = getSubcategories(mainCat._id!);
+                    const isActive = activeCategory === mainCat._id;
 
-                  return (
-                    <div key={mainCat._id} className="mb-4">
-                      <div
-                        onClick={() => handleCategoryClick(mainCat._id!)}
-                        className="flex items-center justify-between cursor-pointer font-serif text-xl text-[#2C3E50] hover:text-[#A67B5B] transition-colors duration-200 py-2" // Added py-2 for better touch target
-                      >
-                        <span>{mainCat.name}</span>
-                        <ChevronDown
-                          className={`transform transition-transform duration-300 ${
-                            isActive ? "rotate-180 text-[#A67B5B]" : "rotate-0"
-                          }`}
-                          size={20}
-                        />
-                      </div>
+                    return (
+                      <div key={mainCat._id} className="mb-1">
+                        <div
+                          onClick={() => handleCategoryClick(mainCat._id!)}
+                          className="flex items-center justify-between cursor-pointer font-serif text-xl text-[#2C3E50] hover:text-[#A67B5B] transition-colors duration-200 py-2"
+                        >
+                          <span>{mainCat.name}</span>
+                          <ChevronDown
+                            className={`transform ml-5 sm:ml-0 transition-transform duration-300 ${
+                              isActive ? "rotate-180 text-[#A67B5B]" : "rotate-0"
+                            }`}
+                            size={20}
+                          />
+                        </div>
 
-                      {/* Dropdown with All + Subcategories */}
-                      <AnimatePresence>
-                        {isActive && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                            className="flex flex-col gap-3 pl-4 mt-3 border-l-2 border-gray-200 overflow-hidden"
-                          >
-                            <Link
-                              onClick={onClose}
-                              href={`/category/${mainCat.slug?.current}`}
-                              className={`hover:text-[#A67B5B] transition text-gray-700 font-medium text-base ${
-                                pathname === `/category/${mainCat.slug?.current}`
-                                  ? "text-[#A67B5B] font-semibold"
-                                  : ""
-                              }`}
+                        {/* Dropdown */}
+                        <AnimatePresence>
+                          {isActive && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.3, ease: "easeInOut" }}
+                              className="flex flex-col gap-3 pl-4 mt-3 border-l-2 border-gray-200 overflow-hidden"
                             >
-                              All {mainCat.name}
-                            </Link>
+                              <Link
+                                onClick={onClose}
+                                href={`/category/${mainCat.slug?.current}`}
+                                className={`hover:text-[#A67B5B] transition text-gray-700 font-medium text-base ${
+                                  pathname ===
+                                  `/category/${mainCat.slug?.current}`
+                                    ? "text-[#A67B5B] font-semibold"
+                                    : ""
+                                }`}
+                              >
+                                All {mainCat.name}
+                              </Link>
 
-                            {subcategories?.length ? (
-                              subcategories.map((sub) => (
-                                <Link
-                                  onClick={onClose}
-                                  key={sub._id}
-                                  href={`/category/${sub.slug?.current}`}
-                                  className={`hover:text-[#A67B5B] transition text-gray-500 text-base ${
-                                    pathname === `/category/${sub.slug?.current}`
-                                      ? "text-[#A67B5B] font-semibold"
-                                      : ""
-                                  }`}
-                                >
-                                  {sub.name}
-                                </Link>
-                              ))
-                            ) : (
-                              <span className="text-gray-400 text-sm">
-                                (No subcategories)
-                              </span>
-                            )}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="text-gray-400">Loading categories...</div>
-              )}
+                              {subcategories?.length ? (
+                                subcategories.map((sub) => (
+                                  <Link
+                                    onClick={onClose}
+                                    key={sub._id}
+                                    href={`/category/${sub.slug?.current}`}
+                                    className={`hover:text-[#A67B5B] transition text-gray-500 text-base ${
+                                      pathname ===
+                                      `/category/${sub.slug?.current}`
+                                        ? "text-[#A67B5B] font-semibold"
+                                        : ""
+                                    }`}
+                                  >
+                                    {sub.name}
+                                  </Link>
+                                ))
+                              ) : (
+                                <span className="text-gray-400 text-sm">
+                                  (No subcategories)
+                                </span>
+                              )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-gray-400">Loading categories...</div>
+                )}
+              </div>
+
+              {/* Store Locator + Care Guide */}
+              <div className="border-t border-gray-200 pt-3 space-y-3">
+                <Link
+                  href="/#studio"
+                  onClick={onClose}
+                  className="block text-gray-600 hover:text-[#2C3E50] text-sm font-normal transition-colors"
+                >
+                  Store Locator
+                </Link>
+                <Link
+                  href="/care-guide"
+                  onClick={onClose}
+                  className="block text-gray-600 hover:text-[#2C3E50] text-sm font-normal transition-colors"
+                >
+                  Care Guide
+                </Link>
+              </div>
             </div>
 
-            {/* Footer Links */}
-            <div className="border-t border-gray-200 pt-4 mt-4 space-y-3">
-              {/* Store Locator */}
-              <Link
-                href="/#studio"
-                onClick={onClose}
-                className="block text-gray-600 hover:text-[#2C3E50] text-sm font-normal transition-colors"
-              >
-                Store Locator
-              </Link>
-
-              {/* Care Guide */}
-              <Link
-                href="/care-guide"
-                onClick={onClose}
-                className="block text-gray-600 hover:text-[#2C3E50] text-sm font-normal transition-colors"
-              >
-                Care Guide
-              </Link>
-
-              {/* Other Quick Links */}
+            {/* Footer Links (Pinned Bottom) */}
+            <div className="border-t border-gray-200 mb-15 pt-4 mt-4 space-y-3">
               {quickLinksDataMenu?.map((item) => (
                 <Link
                   key={item?.title}

@@ -28,7 +28,7 @@ const VisitStudio = () => {
       }}
     >
       
-      <div className="absolute -bottom-8 w-full  z-40 ">
+      <div className="absolute -bottom-8 w-2xl sm:w-full  z-40 ">
         <img
           src={sectionBreak.src}
           alt="Section divider flipped"

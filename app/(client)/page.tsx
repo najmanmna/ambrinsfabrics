@@ -16,6 +16,7 @@ export default async function Home() {
         <DesktopCategoryNav />
       </div>
         <HomeBanner />
+         <ProductStatusSelector />
         <WhatIs />
 
         {/* Section Break Image */}
@@ -40,7 +41,7 @@ export default async function Home() {
           />
         </div> */}
 
-        <ProductStatusSelector />
+       
         {/* <MissionSection /> */}
         <HeritageStory />
         <VisitStudio />
