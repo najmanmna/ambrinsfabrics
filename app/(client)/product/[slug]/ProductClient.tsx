@@ -283,7 +283,7 @@ export default function ProductClient({ product }: { product: any }) {
                           <span className="font-semibold">Returns & Exchanges:</span> Fabrics cut to order are generally non-returnable unless defective or incorrect. Other items (beddings, clothing, accessories) may be exchanged within 7 days if unused and in original condition.
                         </p>
                         <p>
-                          Please see our full <Link href="/return-policy" className="text-[#A67B5B] underline hover:text-[#2C3E50]">Exchange & Return Policy</Link> for details.
+                          Please see our full <Link href="/refund-policy" className="text-[#A67B5B] underline hover:text-[#2C3E50]">Exchange & Return Policy</Link> for details.
                         </p>
                       </div>
                     </motion.div>
