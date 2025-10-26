@@ -5,6 +5,7 @@ import PriceView from "./PriceView";
 import Link from "next/link";
 import Title from "./Title";
 import { image } from "@/sanity/image";
+import { TagIcon } from "@heroicons/react/24/outline";
 
 // ✅ Background texture
 import cardBg from "../public/texture.png";
@@ -61,12 +62,13 @@ const ProductCard = ({ product }: { product: ProductWithVariants }) => {
         {/* Product Image */}
         <div className="relative w-full border-2 border-tech_gold overflow-hidden rounded-lg flex items-center justify-center bg-tech_white z-10">
           <Link href={`/product/${product?.slug?.current || ""}`}>
-            {primaryImage && (
+           {primaryImage ? (
+              // If primaryImage exists, render it
               <>
                 <img
                   src={image(primaryImage).width(620).height(750).url()}
                   alt={product?.name || "productImage"}
-                  className={`w-full h-auto sm:max-h-80 object-contain transition-opacity duration-500 ${
+                  className={`w-full h-full object-cover transition-opacity duration-500 ${
                     hovered && secondaryImage ? "opacity-0" : "opacity-100"
                   }`}
                 />
@@ -74,12 +76,17 @@ const ProductCard = ({ product }: { product: ProductWithVariants }) => {
                   <img
                     src={image(secondaryImage).width(620).height(750).url()}
                     alt={product?.name || "productImage"}
-                    className={`absolute top-0 left-0 w-full h-auto max-h-80 object-contain transition-opacity duration-500 ${
+                    className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-500 ${
                       hovered ? "opacity-100" : "opacity-0"
                     }`}
                   />
                 )}
               </>
+            ) : (
+              // If no primaryImage, render a placeholder
+              <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                <TagIcon className="w-16 h-16 text-gray-300" />
+              </div>
             )}
           </Link>
         </div>

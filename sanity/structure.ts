@@ -5,16 +5,14 @@ import {
 } from 'sanity/structure'
 import { OrderSummaryView } from './views/OrderSummaryView' // Adjust path if needed
 import {
-  TagIcon,
   PackageIcon,
   CheckmarkCircleIcon,
   ClockIcon,
   SyncIcon,
-
   CloseCircleIcon,
-  CogIcon,
 } from '@sanity/icons'
 
+// 🔹 Add custom Admin View for Orders
 // This function determines which views to show when a document is opened.
 export const defaultDocumentNode: DefaultDocumentNodeResolver = (
   S,
@@ -32,6 +30,7 @@ export const defaultDocumentNode: DefaultDocumentNodeResolver = (
   return S.document().views([S.view.form()])
 }
 
+// 🔹 Desk Structure (Simpler Version without Category Nesting/Grouping)
 // This function organizes the main navigation list in the Sanity Studio.
 export const structure = (S: StructureBuilder) =>
   S.list()
@@ -74,7 +73,7 @@ export const structure = (S: StructureBuilder) =>
                 ),
               S.listItem()
                 .title('Shipped')
-                .icon()
+                .icon(() => '🚚') // Using an emoji for the 'Shipped' icon
                 .child(
                   S.documentList()
                     .title('Shipped Orders')
@@ -102,62 +101,14 @@ export const structure = (S: StructureBuilder) =>
             ])
         ),
 
-      // 2. "Catalog" group for Products and Categories
-      S.listItem()
-        .title('Catalog')
-        .icon(PackageIcon)
-        .child(
-          S.list()
-            .title('Catalog')
-            .items([
-              // Manually add the Products list item
-              S.documentTypeListItem('product').title('All Products'),
-              S.divider(),
-              // Custom nested "Categories & Subcategories" list item
-              S.listItem()
-                .title('Categories & Subcategories')
-                .icon(TagIcon)
-                .child(
-                  S.documentList()
-                    .title('Main Categories')
-                    .filter('_type == "category" && !defined(parent)')
-                    .child((documentId: string) =>
-                      S.documentList()
-                        .title('Subcategories')
-                        .filter(
-                          '_type == "category" && parent._ref == $parentId'
-                        )
-                        .params({ parentId: documentId })
-                    )
-                ),
-            ])
-        ),
-
       S.divider(),
 
-      // 3. Singleton for Site-wide Settings
-      S.listItem()
-        .title('Site Settings')
-        .icon(CogIcon)
-        .child(
-          S.document()
-            .schemaType('settings') // Assumes you have a 'settings' schema
-            .documentId('settings') // Use a single, consistent ID
-            .title('Site Settings')
-        ),
-
-      S.divider(),
-
-      // 4. List all other document types, filtering out the ones we've customized
+      // 2. List all other document types, filtering out only the customized ones.
+      // This will show 'product', 'category', 'settings', 'voucher', etc.
+      // as individual top-level list items.
       ...S.documentTypeListItems().filter(
         (listItem: ListItemBuilder) =>
-          ![
-            'order',
-            'orderItem',
-            'category',
-            'product', // Filtered out because it's in the "Catalog" group
-            'settings', // Filtered out because it's a singleton
-          ].includes(listItem.getId() ?? '')
+          !['order', 'orderItem'].includes(listItem.getId() ?? '')
       ),
     ])
 

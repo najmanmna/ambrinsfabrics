@@ -102,7 +102,7 @@ export const productType = defineType({
               name: "images",
               title: "Images for this Variant",
               type: "array",
-              of: [{ type: "image", options: { hotspot: true } }],
+              of: [{ type: "image", options: { hotspot: true,accept: "image/jpeg, image/png, image/webp, image/heic, image/heif, .heic" } }],
               validation: (Rule) => Rule.required().min(1),
             }),
           ],
