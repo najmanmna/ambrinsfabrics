@@ -13,7 +13,7 @@ interface FloatingVoucherCtaProps {
 }
 
 const FloatingVoucherCta: React.FC<FloatingVoucherCtaProps> = ({
-  href = "/voucher", // Changed default back to /vouchers, assuming this is correct
+  href = "/vouchers", // Changed default back to /vouchers, assuming this is correct
   label = "Gift Vouchers",
   position = "bottom-right",
   offset = 40,
