@@ -2,7 +2,7 @@ import { sanityFetch } from "../lib/live";
 import {
   ADDRESS_QUERY,
   ALL_PRODUCTS_QUERY,
-  ALLCATEGORIES_QUERY,
+
   BANNER_QUERY,
   FEATURE_PRODUCTS,
   FEATURED_CATEGORY_QUERY,
@@ -35,6 +35,8 @@ const getFeaturedCategory = async (quantity: number) => {
     return [];
   }
 };
+
+
 
 // 🔹 All Products
 const getAllProducts = async () => {
@@ -159,7 +161,7 @@ export {
   getFeaturedCategory,
   getAllProducts,
   getFeaturedProducts,
-  
+
   getNewProducts,
   getAddresses,
   getCategories,

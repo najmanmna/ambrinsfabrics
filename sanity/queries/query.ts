@@ -158,18 +158,7 @@ export const ADDRESS_QUERY = defineQuery(`
 `);
 
 // 🔹 All Categories (for menus, etc.)
-export const ALLCATEGORIES_QUERY = defineQuery(`
-  *[_type == "category"] | order(name asc){
-    _id,
-    name,
-    slug,
-    parent->{
-      _id,
-      name,
-      slug
-    }
-  }
-`);
+
 
 // 🔹 Subscribers (unchanged)
 export const SUBSCRIBERS_QUERY = `*[_type == "subscribers"]{
