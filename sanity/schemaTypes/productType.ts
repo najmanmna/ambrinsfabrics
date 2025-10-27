@@ -27,44 +27,61 @@ export const productType = defineType({
     }),
 
     // ✨ UPDATED: This dropdown will ONLY show main categories.
-    defineField({
+   defineField({
       name: "category",
-      title: "Main Category",
+      title: "Main Category (Level 1)",
       type: "reference",
       to: [{ type: "category" }],
-      // This filter ensures only documents that DO NOT have a parent are shown.
       options: {
-        filter: "!defined(parent)",
+        filter: "!defined(parent)", // Only show main categories
       },
       validation: (Rule) => Rule.required(),
     }),
 
-    // ✨ UPDATED: This dropdown will be filtered based on the main category selection.
+    // --- LEVEL 2 ---
     defineField({
       name: "subcategory",
-      title: "Subcategory",
+      title: "Subcategory (Level 2)",
       type: "reference",
       to: [{ type: "category" }],
       options: {
         filter: ({ document }) => {
-          // Get the selected category's ID safely using optional chaining
-           const categoryId = (document?.category as { _ref: string })?._ref;
-
-          // If no category is selected, return an empty list
+          const categoryId = (document?.category as { _ref: string })?._ref;
           if (!categoryId) {
-            return { filter: "false" };
+            return { filter: "false" }; // No main category selected
           }
-
-          // Return the filter to find subcategories of the selected main category
           return {
             filter: `parent._ref == $categoryId`,
             params: { categoryId },
           };
         },
       },
-      // ✅ Use optional chaining here as well for safety
       readOnly: ({ document }) => !document?.category,
     }),
+    
+    // --- NEW LEVEL 3 FIELD ---
+    defineField({
+      name: "specificCategory",
+      title: "Specific Category (Level 3)",
+      type: "reference",
+      to: [{ type: "category" }],
+      description: "Optional. Select the most specific type (e.g., 'Indigo Prints').",
+      options: {
+        filter: ({ document }) => {
+          const subcategoryId = (document?.subcategory as { _ref: string })?._ref;
+          if (!subcategoryId) {
+            return { filter: "false" }; // No subcategory selected
+          }
+          // Show categories whose parent is the selected subcategory
+          return {
+            filter: `parent._ref == $subcategoryId`,
+            params: { subcategoryId },
+          };
+        },
+      },
+      readOnly: ({ document }) => !document?.subcategory,
+    }),
+    // --- END NEW FIELD ---
 
     // 🔹 Variants: Each pattern/style has its own stock and images.
     defineField({

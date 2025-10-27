@@ -1,4 +1,3 @@
-// schemas/categoryType.ts
 import { TagIcon } from "@sanity/icons";
 import { defineField, defineType } from "sanity";
 
@@ -26,10 +25,10 @@ export const categoryType = defineType({
       title: "Parent Category",
       type: "reference",
       to: [{ type: "category" }],
-      description: "Leave empty for a main category. Assign a parent to make this a subcategory.",
-      options: {
-        filter: "!defined(parent)", // Only allow main categories to be selected as a parent
-      },
+      description: "Leave empty for a main category. Assign a parent to make this a subcategory (or sub-subcategory).",
+      // --- CHANGE ---
+      // We have REMOVED the 'options.filter' rule.
+      // Now, any category can be a parent, not just main categories.
     }),
   ],
   preview: {
@@ -40,8 +39,10 @@ export const categoryType = defineType({
     prepare({ title, parent }) {
       return {
         title,
-        subtitle: parent ? `Subcategory of ${parent}` : "Main Category",
+        // This subtitle will now show "Child of Fabrics" or "Child of Cotton Prints"
+        subtitle: parent ? `Child of ${parent}` : "Main Category",
       };
     },
   },
 });
+
