@@ -241,6 +241,9 @@ export default function ProductClient({ product }: { product: any }) {
                       <PortableText value={product.description} />
                     </div>
                   )}
+                   <p>
+                          Please see  <Link href="/care-guide" className="text-[#A67B5B] underline hover:text-[#2C3E50]">Care Guide</Link>.
+                        </p>
                   {/* Add a message if no details are available */}
                   {!product.material && !product.width && !product.useCases && !product.description && (
                       <p className="italic text-gray-500">More details coming soon.</p>

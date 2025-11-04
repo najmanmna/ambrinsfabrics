@@ -89,7 +89,7 @@ export default function ImageView({ images = [], isStock }: Props) {
 
         {/* Thumbnails below */}
         {images.length > 1 && (
-          <div className="flex justify-center gap-2 mt-3 flex-wrap p-2 bg-white rounded-md border">
+          <div className="flex justify-center gap-2 mt-3 flex-wrap p-2 rounded-md border">
             {images.map((img, idx) => (
               <button
                 key={`${img._key}-${idx}`}
@@ -101,7 +101,7 @@ export default function ImageView({ images = [], isStock }: Props) {
                 <img
                   src={urlFor(img).url()}
                   alt={`thumb-${idx}`}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                 />
               </button>
             ))}
