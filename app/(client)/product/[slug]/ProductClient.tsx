@@ -5,7 +5,7 @@ import AddToCartButton from "@/components/AddToCartButton";
 import ImageView from "@/components/ImageView";
 import PriceView from "@/components/PriceView";
 import Container from "@/components/Container";
-import Image from "next/image"; // <-- Make sure this is from "next/image"
+import Image, { ImageLoaderProps } from "next/image"; // --- ✨ OPTIMIZATION: Added ImageLoaderProps
 import { useRouter } from "next/navigation";
 import useCartStore from "@/store";
 import Loading from "@/components/Loading";
@@ -15,6 +15,14 @@ import LocalQuantitySelector from "@/components/LocalQuantitySelector";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import RelatedProductsSection from "@/components/RelatedProductsSection";
+
+// --- ✨ OPTIMIZATION: Sanity Image Loader ---
+// Directs image requests to Sanity CDN, saving Netlify bandwidth.
+const sanityLoader = ({ src, width, quality }: ImageLoaderProps) => {
+  const hasParams = src.includes("?");
+  const separator = hasParams ? "&" : "?";
+  return `${src}${separator}w=${width}&q=${quality || 80}&auto=format&fit=max`;
+};
 
 export default function ProductClient({ product }: { product: any }) {
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
@@ -100,6 +108,8 @@ export default function ProductClient({ product }: { product: any }) {
       <Container className="py-16 sm:py-24">
         <div className="flex flex-col md:flex-row gap-10 lg:gap-16">
           {/* Product Images */}
+          {/* Note: ImageView likely contains <Image> tags as well. 
+              Ensure ImageView also implements the sanityLoader for maximum optimization. */}
           {images.length > 0 && (
             <ImageView images={images} isStock={availableStock} />
           )}
@@ -175,19 +185,14 @@ export default function ProductClient({ product }: { product: any }) {
                             : "border-gray-300 hover:border-[#A67B5B]"
                         }`}
                       >
+                        {/* --- ✨ OPTIMIZATION: Variant Thumbnails --- */}
                         <Image
-                          // --- ✨ OPTIMIZATION FIX HERE ---
-                          // Request a 2x image (128x160) for the 64x80 container.
-                          // Next.js will use this high-quality src to create
-                          // optimized, smaller versions.
-                          src={urlFor(preview)
-                            .width(128)
-                            .height(160)
-                            .fit("crop")
-                            .url()}
+                          loader={sanityLoader}
+                          // Pass the base URL. Loader adds ?w=64/128 automatically
+                          src={urlFor(preview).url()} 
                           alt={variantName}
-                          width={64} // Layout width (from w-16)
-                          height={80} // Layout height (from h-20)
+                          width={64}  // Next.js will ask Sanity for 64px (1x)
+                          height={80} // and ~128px (2x) automatically
                           className="object-cover w-full h-full"
                         />
                       </button>
