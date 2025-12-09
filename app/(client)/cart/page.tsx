@@ -2,10 +2,13 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import Image, { ImageLoaderProps } from "next/image"; // Added ImageLoaderProps
 import toast from "react-hot-toast";
 
+// 🖼️ Imports for Optimization
 import { urlFor } from "@/sanity/lib/image";
+import giftPlaceholder from "@/public/gift.png"; // 👈 Import your local gift image here
+
 import useCartStore, { CartItem as CartItemType } from "@/store";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -27,9 +30,19 @@ import Loading from "@/components/Loading";
 import EmptyCart from "@/components/EmptyCart";
 import PriceFormatter from "@/components/PriceFormatter";
 import QuantityButtons from "@/components/QuantityButtons";
-import { ArrowLeft, Lock, ShoppingBag, Trash2 } from "lucide-react";
+import { ArrowLeft, Lock, Trash2 } from "lucide-react";
 
-// --- Sub-component for a single Cart Item for better structure and readability ---
+// 📉 1. Bandwidth-Optimized Loader
+// Caps quality at 65% for thumbnails and forces WebP/AVIF
+const thumbnailLoader = ({ src, width, quality }: ImageLoaderProps) => {
+  const hasParams = src.includes("?");
+  const separator = hasParams ? "&" : "?";
+  // 65 is visually identical for small thumbnails but saves ~40% bandwidth
+  const q = quality || 65; 
+  return `${src}${separator}w=${width}&q=${q}&auto=format&fit=max`;
+};
+
+// --- Sub-component for a single Cart Item ---
 const CartItem = ({ item }: { item: CartItemType }) => {
   const { product, variant, itemKey, quantity } = item;
   const deleteCartProduct = useCartStore((s) => s.deleteCartProduct);
@@ -46,37 +59,48 @@ const CartItem = ({ item }: { item: CartItemType }) => {
   const discountPercent = typeof product?.discount === "number" ? product.discount : 0;
   const discountedPrice = basePrice - (discountPercent * basePrice) / 100;
 
+  // 🖼️ Logic: Determine valid Sanity Image Source
+  const isVoucher = (product as any)?.productType === "voucher";
+  
+  // If it's a voucher, check for an uploaded image. If standard product, use the thumbnail.
+  // Note: We get the raw URL string for the loader to handle.
+  const sanityImageSource = isVoucher
+    ? ((product as any)?.image || (product as any)?.voucherImage?.asset?.url)
+    : (thumbnail ? urlFor(thumbnail).url() : null);
+
   return (
     <div className="flex items-start gap-4 py-4">
- 
-     {/* Product Image */}
-{(product?.productType === "voucher" || thumbnail) && (
-  <div className="flex-shrink-0">
-    {product?.productType === "voucher" ? (
-      <Image
-        src={
-          product?.image ||
-          product?.voucherImage?.asset?.url ||
-          "/gift.png" // default local image
-        }
-        alt={product?.name || "Voucher image"}
-        width={100}
-        height={125}
-        className="rounded-lg border object-cover aspect-[4/5]"
-      />
-    ) : (
-      <Link href={`/product/${product?.slug?.current || ""}`}>
-        <Image
-          src={urlFor(thumbnail).url()}
-          alt={product?.name || "Product image"}
-          width={100}
-          height={125}
-          className="rounded-lg border object-cover aspect-[4/5]"
-        />
-      </Link>
-    )}
-  </div>
-)}
+      
+      {/* Product Image Area */}
+      <div className="flex-shrink-0">
+        {/* Scenario A: It has a valid Sanity URL (Product or Custom Voucher) */}
+        {sanityImageSource ? (
+           <Link href={isVoucher ? "#" : `/product/${product?.slug?.current || ""}`}>
+             <Image
+               // 👇 Use the bandwidth-saving loader
+               loader={thumbnailLoader}
+               src={sanityImageSource}
+               alt={product?.name || "Product image"}
+               width={100}
+               height={125}
+               className="rounded-lg border object-cover aspect-[4/5]"
+               // 👇 CRITICAL: Tells browser "I only need 100px". 
+               // Prevents fetching 300px+ versions on high-DPI screens.
+               sizes="100px" 
+             />
+           </Link>
+        ) : (
+           // Scenario B: No Sanity URL (e.g. Default Voucher fallback)
+           // Uses Next.js default optimization on the local file (0 Sanity Bandwidth cost)
+           <Image 
+              src={giftPlaceholder} 
+              alt="Voucher" 
+              width={100} 
+              height={125}
+              className="rounded-lg border object-cover aspect-[4/5]" 
+           />
+        )}
+      </div>
 
       {/* Product Info & Actions */}
       <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -128,7 +152,6 @@ const CartItem = ({ item }: { item: CartItemType }) => {
     </div>
   );
 };
-
 
 // --- Main Cart Page Component ---
 const CartPage = () => {
@@ -233,7 +256,7 @@ const CartPage = () => {
                 <div className="flex justify-between text-gray-600">
                   <span>Discount</span>
                   <span className="text-green-600">
-                     <PriceFormatter amount={subtotal - total} />
+                      <PriceFormatter amount={subtotal - total} />
                   </span>
                 </div>
                 <Separator />
