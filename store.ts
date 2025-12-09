@@ -86,7 +86,7 @@ const useCartStore = create<StoreState>()(
     }
 
     // If new item → add fresh
-    toast.success(`${product.name} added!`);
+    // toast.success(`${product.name} added!`);
     return {
       items: [
         ...state.items,
