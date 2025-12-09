@@ -247,11 +247,15 @@ export async function POST(req: Request) {
       const variantKey = it.variant?._key;
       if (!variantKey) throw new Error("Variant key missing for stock update");
 
-      tx.patch(it.product._id, (p) =>
-        p
-          .inc({ [`variants[_key=="${variantKey}"].stockOut`]: it.quantity })
-          .ifRevisionId(it.product._rev)
-      );
+    // ✅ FIXED CODE
+tx.patch(it.product._id, (p) =>
+  p
+    // 1. If stockOut is blank, set it to 0 first
+    .setIfMissing({ [`variants[_key=="${variantKey}"].stockOut`]: 0 }) 
+    // 2. THEN increment it
+    .inc({ [`variants[_key=="${variantKey}"].stockOut`]: it.quantity })
+    .ifRevisionId(it.product._rev)
+);
     });
 
     // 3. Create individual voucher documents
