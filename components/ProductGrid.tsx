@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react"; // Keeping this if you still want a gene
 import Container from "./Container";
 import { ALL_PRODUCTS_QUERYResult } from "@/sanity.types";
 import Link from "next/link";
-import sectionBreak from "../public/sectionBreak.png";
+import sectionBreak from "@/images/sectionBreak.png";
 
 
 // Import pin & background textures

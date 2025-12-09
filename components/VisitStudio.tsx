@@ -1,10 +1,10 @@
 "use client";
 import React, { useRef, useState } from "react";
 import Container from "./Container";
-import bgPattern from "../public/heri2.png";
-import borderTile from "../public/line-motif.png";
+import bgPattern from "@/images/heri2.png";
+import borderTile from "@/images/line-motif.png";
 import { Volume2, VolumeX } from "lucide-react"; // sound icons
-import sectionBreak from "../public/sectionBreak.png";
+import sectionBreak from "@/images/sectionBreak.png";
 
 const VisitStudio = () => {
   const videoRef = useRef<HTMLVideoElement>(null);

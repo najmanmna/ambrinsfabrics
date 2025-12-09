@@ -1,16 +1,15 @@
 "use client";
 import React from "react";
-import Container from "./Container";
 import Image from "next/image";
-import sectionBreak from "../public/sectionBreak.png";
+import { motion } from "framer-motion"; // ✨ Animation library
+import Container from "./Container";
 
-// Images you uploaded
-import img1 from "../public/heri1.png";
-import img2 from "../public/heri2.png";
-import img3 from "../public/heri3.png";
-
-// Tileable motif border
-import borderTile from "../public/line-motif.png";
+// 🖼️ Updated Imports (from your new 'images' folder)
+import img1 from "@/images/heri1.png";
+import img2 from "@/images/heri2.png";
+import img3 from "@/images/heri3.png";
+import sectionBreak from "@/images/sectionBreak.png";
+import borderTile from "@/images/line-motif.png";
 
 const heritagePoints = [
   {
@@ -22,7 +21,7 @@ const heritagePoints = [
   {
     title: "Curated for Sri Lanka",
     description:
-      "Our collections are selected with Sri Lankan lifestyles in mind – lightweight, breathable, and timelessly stylish",
+      "Our collections are selected with Sri Lankan lifestyles in mind – lightweight, breathable, and timelessly stylish.",
     image: img2,
   },
   {
@@ -33,71 +32,105 @@ const heritagePoints = [
   },
 ];
 
+// ✨ Animation Variants
+const fadeInUp = {
+  hidden: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
+};
+
 const HeritageStory = () => {
   return (
-    <div className="relative ">
-   
-      <div className="absolute -bottom-4 w-2xl sm:w-full overflow-hidden z-20">
-        <img
-          src={sectionBreak.src}
-          alt="Section divider flipped"
-          className="full h-auto object-cover rotate-180"
+    <div className="relative overflow-hidden pb-10">
+      {/* Footer Section Divider (Absolute Bottom) */}
+      <div className="absolute -bottom-1 w-full overflow-hidden leading-[0] z-20">
+        <Image
+          src={sectionBreak}
+          alt="Section divider"
+          className="w-full h-auto object-cover rotate-180"
         />
-      </div>{" "}
-      <Container className="py-15 sm:py-24 ">
+      </div>
+
+      <Container className="py-16 sm:py-24">
         {/* Heading */}
-        <div className="text-center mb-16 ">
+        <motion.div 
+          className="text-center mb-20"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={fadeInUp}
+        >
           <h2 className="text-3xl sm:text-4xl font-playfair font-semibold text-tech_primary">
             THE HERITAGE WE BRING
           </h2>
-          <p className="text-tech_gold mt-2 text-lg sm:text-xl max-w-xl mx-auto">
-            A celebration of authentic handblock printing, carefully curated for your home
-            in Sri Lanka.
+          <p className="text-tech_gold mt-4 text-lg sm:text-xl max-w-xl mx-auto font-light leading-relaxed">
+            A celebration of authentic handblock printing, carefully curated for
+            your home in Sri Lanka.
           </p>
-        </div>
+        </motion.div>
 
-        {/* Points */}
-        <div className="flex flex-col gap-16">
-          {heritagePoints.map((point, idx) => (
-            <div
-              key={idx}
-              className={`flex flex-col lg:flex-row items-center lg:justify-between gap-6 ${
-                idx % 2 !== 0 ? "lg:flex-row-reverse" : ""
-              }`}
-            >
-              {/* Text */}
-              <div className="lg:w-1/2 text-center lg:text-left">
-                <h3 className="text-xl sm:text-2xl font-playfair font-semibold mb-2">
-                  {idx + 1}. {point.title}
-                </h3>
-                <p className="text-gray-700 text-base sm:text-lg ml-6">
-                  {point.description}
-                </p>
-              </div>
+        {/* Points Loop */}
+        <div className="flex flex-col gap-20 sm:gap-32">
+          {heritagePoints.map((point, idx) => {
+            const isEven = idx % 2 === 0;
 
-              {/* Image with motif border */}
-              <div
-                className=" p-[10px] relative"
-                style={{
-                  backgroundImage: `url(${borderTile.src})`,
-                  backgroundRepeat: "repeat",
-                   backgroundSize: "10%",
-                  
-                }}
+            return (
+              <motion.div
+                key={idx}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-100px" }} // Triggers animation when 100px into view
+                className={`flex flex-col lg:flex-row items-center gap-10 lg:gap-16 ${
+                  !isEven ? "lg:flex-row-reverse" : ""
+                }`}
               >
-                
-                <Image
-                  src={point.image}
-                  alt={point.title}
-                   width={600}
-            height={400}
-                  className="w-full aspect-[2/1] object-cover "
-                  placeholder="blur"
-                />
-            
-              </div>
-            </div>
-          ))}
+                {/* Text Content */}
+                <motion.div 
+                  className={`lg:w-1/2 text-center ${isEven ? 'lg:text-left' : 'lg:text-right'}`}
+                  variants={{
+                    hidden: { opacity: 0, x: isEven ? -50 : 50 },
+                    visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: "easeOut" } }
+                  }}
+                >
+                  <h3 className="text-2xl sm:text-3xl font-playfair font-semibold mb-4 text-[#2C3E50]">
+                    <span className="text-tech_gold mr-2 text-xl align-middle">0{idx + 1}.</span> 
+                    {point.title}
+                  </h3>
+                  <p className="text-gray-600 text-base sm:text-lg leading-relaxed max-w-md mx-auto lg:mx-0 inline-block">
+                    {point.description}
+                  </p>
+                </motion.div>
+
+                {/* Image Frame */}
+                <motion.div
+                  className="lg:w-1/2 w-full max-w-[600px]"
+                  variants={{
+                    hidden: { opacity: 0, x: isEven ? 50 : -50 },
+                    visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: "easeOut", delay: 0.2 } }
+                  }}
+                >
+                  <div
+                    className="p-[12px] relative shadow-lg"
+                    style={{
+                      backgroundImage: `url(${borderTile.src})`,
+                      backgroundRepeat: "repeat",
+                      backgroundSize: "40px", // Fixed size looks sharper
+                    }}
+                  >
+                    <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-100 shadow-inner">
+                      <Image
+                        src={point.image}
+                        alt={point.title}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-1000 ease-in-out"
+                        placeholder="blur"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            );
+          })}
         </div>
       </Container>
     </div>

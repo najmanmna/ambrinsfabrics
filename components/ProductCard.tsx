@@ -11,19 +11,10 @@ import cardBg from "../public/texture.png";
 
 type ProductWithVariants = ALL_PRODUCTS_QUERYResult[number];
 
-// --- 1. SANITY IMAGE LOADER ---
-// This prevents "Double Optimization" (Next.js server processing Sanity images).
-// It offloads bandwidth to Sanity's CDN and ensures the exact size requested
-// by the browser is what Sanity delivers.
+// --- SANITY IMAGE LOADER ---
 const sanityLoader = ({ src, width, quality }: ImageLoaderProps) => {
-  // If the src is already a full URL, we append params
-  // If you store raw image references, you might adjust this logic.
   const hasParams = src.includes("?");
   const separator = hasParams ? "&" : "?";
-  
-  // Sanity API specific parameters:
-  // auto=format: Serves AVIF/WebP automatically
-  // fit=max: Resizes while maintaining aspect ratio
   return `${src}${separator}w=${width}&q=${quality || 80}&auto=format&fit=max`;
 };
 
@@ -49,34 +40,34 @@ const ProductCard = ({
       return acc + Math.max(stock, 0);
     }, 0) || 0;
 
+  // State for hover effect
   const [hovered, setHovered] = useState(false);
+  // ✨ NEW: State for loading skeleton
+  const [isImageLoading, setIsImageLoading] = useState(true);
 
   const primaryImage = variantImages[0];
   const secondaryImage = variantImages[1];
 
-  // Base URL construction without hardcoded sizes
-  // We let the 'loader' and 'sizes' prop handle the pixel density
   const primaryImageUrl = primaryImage ? image(primaryImage).url() : null;
   const secondaryImageUrl = secondaryImage ? image(secondaryImage).url() : null;
 
   return (
     <div
-      className="group relative overflow-hidden text-sm shadow-[2px_4px_8px_rgba(0,0,0,0.08),-2px_3px_6px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.12),0_6px_12px_rgba(0,0,0,0.08)] transition-shadow duration-300"
+      className="group relative overflow-hidden text-sm shadow-[2px_4px_8px_rgba(0,0,0,0.08),-2px_3px_6px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.12),0_6px_12px_rgba(0,0,0,0.08)] transition-shadow duration-300 bg-tech_white"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* --- BACKGROUND TEXTURE OPTIMIZATION --- */}
-      {/* Reduced quality to 50 (textures don't need sharp edges) */}
+      {/* --- BACKGROUND TEXTURE --- */}
       <Image
         src={cardBg}
         alt=""
         fill
-        sizes="(max-width: 640px) 100vw, 400px" // Provide accurate size estimate
+        sizes="(max-width: 640px) 100vw, 400px"
         quality={50}
-        placeholder="blur" // Only works for static imports
-        className="object-cover object-center z-0"
+        placeholder="blur"
+        className="object-cover object-center z-0 pointer-events-none"
         style={{ backgroundBlendMode: "multiply" }}
-        aria-hidden="true" // Accessibility: Hide purely decorative images
+        aria-hidden="true"
       />
 
       <div className="relative z-10 py-2 sm:py-4 px-2 sm:px-4 flex flex-col min-h-[375px] sm:min-h-[400px]">
@@ -89,41 +80,53 @@ const ProductCard = ({
 
         {/* Stock Overlay */}
         {totalStock === 0 && (
-          <div className="absolute inset-0 bg-black/20 flex items-center justify-center text-white font-bold text-lg z-30">
+          <div className="absolute inset-0 bg-black/20 flex items-center justify-center text-white font-bold text-lg z-30 pointer-events-none">
             OUT OF STOCK
           </div>
         )}
 
-        {/* Product Image */}
-        <div className="relative w-full border-2 border-tech_gold overflow-hidden rounded-lg flex items-center justify-center bg-tech_white z-10 aspect-[620/750]">
-          <Link href={`/product/${product?.slug?.current || ""}`} className="w-full h-full relative">
+        {/* Product Image Container */}
+        {/* ✨ MODIFIED: Added conditional classes for skeleton loader */}
+        <div 
+          className={`relative w-full border-2 border-tech_gold overflow-hidden rounded-lg flex items-center justify-center z-10 aspect-[620/750] transition-colors duration-300
+          ${isImageLoading ? 'bg-gray-200 animate-pulse' : 'bg-tech_white'}`}
+        >
+          <Link
+            href={`/product/${product?.slug?.current || ""}`}
+            className="w-full h-full relative"
+          >
             {primaryImageUrl ? (
               <>
+                {/* ✨ MODIFIED: Added onLoadingComplete and dynamic opacity */}
                 <Image
-                  loader={sanityLoader} // Bypass Next.js server, go straight to Sanity CDN
+                  loader={sanityLoader}
                   src={primaryImageUrl}
                   alt={product?.name || "Product Image"}
-                  fill // Use fill + aspect-ratio parent instead of hardcoded width/height
+                  fill
                   sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 300px"
                   priority={priority}
-                  className="object-cover transition-opacity duration-500"
+                  // When loading is done, set state to false
+                  onLoadingComplete={() => setIsImageLoading(false)}
+                  // Start with opacity-0, fade to opacity-100 when loading finishes
+                  className={`object-cover transition-opacity duration-500 ${
+                     isImageLoading ? 'opacity-0' : 'opacity-100'
+                  }`}
                 />
-                
-                {/* --- BANDWIDTH OPTIMIZATION: CONDITIONAL RENDERING --- */}
-                {/* Only render the <img> tag if the user is hovering. 
-                    This prevents downloading the second image for every product on page load. */}
+
+                {/* Secondary Hover Image (Kept as is) */}
                 {hovered && secondaryImageUrl && (
                   <Image
                     loader={sanityLoader}
                     src={secondaryImageUrl}
-                    alt="" // Decorative on hover
+                    alt=""
                     fill
                     sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 300px"
-                    className="absolute top-0 left-0 w-full h-full object-cover animate-fadeIn"
+                    className="absolute top-0 left-0 w-full h-full object-cover animate-fadeIn z-20"
                   />
                 )}
               </>
             ) : (
+              // Fallback for missing image
               <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                 <TagIcon className="w-16 h-16 text-gray-300" />
               </div>
@@ -151,20 +154,21 @@ const ProductCard = ({
           </div>
 
           <div className="mt-2 relative w-full h-10 flex items-center justify-center">
-            {/* Logic: If out of stock, show price (faded?) or keep layout stable. 
-                Using absolute positioning here to prevent layout jumps on hover */}
-            
-            <div className={`transition-opacity duration-300 ${hovered && totalStock > 0 ? 'opacity-0' : 'opacity-100'}`}>
-                <PriceView
-                  price={product?.price}
-                  discount={product.discount}
-                  className="text-sm sm:text-lg"
-                  unitLabel={
-                    product?.category?.name?.toLowerCase() === "fabrics"
-                      ? "/meter"
-                      : undefined
-                  }
-                />
+            <div
+              className={`transition-opacity duration-300 ${
+                hovered && totalStock > 0 ? "opacity-0" : "opacity-100"
+              }`}
+            >
+              <PriceView
+                price={product?.price}
+                discount={product.discount}
+                className="text-sm sm:text-lg"
+                unitLabel={
+                  product?.category?.name?.toLowerCase() === "fabrics"
+                    ? "/meter"
+                    : undefined
+                }
+              />
             </div>
 
             {hovered && totalStock > 0 && (

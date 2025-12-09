@@ -7,25 +7,31 @@ import Image from "next/image";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
-// Assuming your banner images are in the public folder
+// 👇 1. Import images directly (Optimized by Next.js automatically)
+// Ensure your images are moved to src/assets/banners/
+import bg1 from "@/images/banners/bg1.png";
+import bg2 from "@/images/banners/bg2.png";
+import bg3 from "@/images/banners/bg3.png";
+
 const localBanners = [
   {
-    imageDesktop: "/banners/bg1.png",
-    imageMobile: "/banners/bg1.png", // Use a specific mobile image if available
+    // 👇 2. Pass the imported object, not a string path
+    imageDesktop: bg1,
+    imageMobile: bg1, // If you have specific mobile crops, import them separately (e.g., bg1Mobile)
     heading: "Handcrafted Block Prints",
     subheading: "Inspired By Tradition, Sustainably Made",
     link: "/shop",
   },
   {
-    imageDesktop: "/banners/bg2.png",
-    imageMobile: "/banners/bg2.png",
+    imageDesktop: bg2,
+    imageMobile: bg2,
     heading: "Artisanal Block Prints",
     subheading: "Every Piece Tells a Story of Craftsmanship",
     link: "/shop",
   },
   {
-    imageDesktop: "/banners/bg3.png",
-    imageMobile: "/banners/bg3.png",
+    imageDesktop: bg3,
+    imageMobile: bg3,
     heading: "Sustainable Elegance",
     subheading: "Mindfully Made for the Modern Home",
     link: "/shop",
@@ -36,7 +42,7 @@ const CarouselWithZoom = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const isMobile = useIsMobile();
 
-  const slideDuration = 8000; // 8 seconds per slide
+  const slideDuration = 8000;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -45,7 +51,6 @@ const CarouselWithZoom = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Animation variants
   const textContainerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -64,7 +69,8 @@ const CarouselWithZoom = () => {
       <div className="relative w-full h-[50vh] sm:h-[85vh] overflow-hidden rounded-lg shadow-md">
         <AnimatePresence>
           {localBanners.map((item, index) => {
-            const imageUrl = isMobile ? item.imageMobile : item.imageDesktop;
+            // Select the imported image object
+            const imageSrc = isMobile ? item.imageMobile : item.imageDesktop;
 
             return (
               selectedIndex === index && (
@@ -83,11 +89,15 @@ const CarouselWithZoom = () => {
                     transition={{ duration: slideDuration / 1000 + 1, ease: "linear" }}
                   >
                     <Image
-                      src={imageUrl}
+                      src={imageSrc}
                       alt={`Banner ${index + 1}`}
                       fill
+                      // 👇 3. 'placeholder="blur"' works because we used static imports
+                      placeholder="blur" 
                       className="object-cover"
-                      priority={index === 0}
+                      // 👇 4. Critical for LCP: Priority only on the first slide
+                      priority={index === 0} 
+                      sizes="(max-width: 768px) 100vw, 85vw" // Helps Netlify serve the right size
                     />
                   </motion.div>
                   <div className="absolute inset-0 bg-black/30" />
