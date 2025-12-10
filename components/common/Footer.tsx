@@ -16,7 +16,7 @@ const quickLinks = [
   { href: "/care-guide", title: "Care Guide" },
   { href: "/terms-and-conditions", title: "Terms & Conditions" },
   // Corrected link spelling
-  { href: "/return-policy", title: "Exchange & Return Policy" },
+  { href: "/refund-policy", title: "Exchange & Return Policy" },
   { href: "/privacy-policy", title: "Privacy Policy" },
 ];
 

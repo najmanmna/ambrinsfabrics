@@ -271,7 +271,7 @@ xxxxxx Bank Dehiwala`;
                 <strong>Other items:</strong> Items other than fabrics are
                 exchangeable/returnable according to our{" "}
                 <Link
-                  href="/returns"
+                  href="/refund-policy"
                   className="underline text-blue-600"
                 >
                   Return & Refund Policy
@@ -283,7 +283,7 @@ xxxxxx Bank Dehiwala`;
             <p className="text-sm text-gray-600">
               For full details, please read our{" "}
               <Link
-                href="/returns"
+                href="/refund-policy"
                 className="underline text-blue-600"
               >
                 Return & Refund Policy

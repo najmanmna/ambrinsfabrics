@@ -582,12 +582,12 @@ export default function CheckoutPage() {
                     className="space-y-4"
                   >
                     {/* --- ADD CARD OPTION --- */}
-                    <div className="flex items-center space-x-3">
+                    {/* <div className="flex items-center space-x-3">
                       <RadioGroupItem value="CARD" id="card" />
                       <Label htmlFor="card" className="font-medium">
                         Pay by Card (Online)
                       </Label>
-                    </div>
+                    </div> */}
 
                     {/* --- MODIFY COD OPTION --- */}
                     <div className="flex items-center space-x-3">

@@ -6,6 +6,7 @@ import PriceFormatter from "./PriceFormatter";
 import { motion } from "framer-motion";
 import type { Product } from "@/sanity.types";
 import { CreditCardIcon } from "@heroicons/react/24/outline";
+import { Button } from "./ui/button";
 
 interface VoucherTemplate {
   _id: string;
@@ -95,11 +96,17 @@ const product = {
 
       {/* Add to cart */}
       <div className="p-6 relative z-10 mt-auto">
-        <AddToCartButton
+        {/* <AddToCartButton
           product={product as any}
           variant={variant as any}
           className="w-full bg-[#2C3E50] text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-[#46627f] transition-all transform hover:-translate-y-0.5"
-        />
+        /> */}
+        <Button
+          
+          className="w-full bg-[#2C3E50] text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-[#46627f] transition-all transform hover:-translate-y-0.5"
+        >
+          Coming Soon
+        </Button>
       </div>
     </motion.div>
   );
