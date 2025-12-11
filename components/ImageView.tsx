@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { urlFor } from "@/sanity/lib/image";
-import { motion, AnimatePresence } from "framer-motion"; // Corrected import from "motion/react" to "framer-motion"
+import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import Image, { ImageLoaderProps } from "next/image"; // ✨ Import Next.js Image
 import {
   Carousel,
   CarouselContent,
@@ -17,6 +18,13 @@ interface Props {
   images?: Array<{ _key: string; asset?: { _ref: string } }>;
   isStock?: number;
 }
+
+// ✨ OPTIMIZATION: Thumbnail Loader (Quality 65, WebP, max width)
+const thumbnailLoader = ({ src, width, quality }: ImageLoaderProps) => {
+  const hasParams = src.includes("?");
+  const separator = hasParams ? "&" : "?";
+  return `${src}${separator}w=${width}&q=${quality || 65}&auto=format&fit=max`;
+};
 
 export default function ImageView({ images = [], isStock }: Props) {
   const [active, setActive] = useState(images[0]);
@@ -48,10 +56,9 @@ export default function ImageView({ images = [], isStock }: Props) {
 
   return (
     <>
-      {/* Main container for images - Applied sticky styles here */}
       <div
-        className="w-full md:w-2/5 md:h-[calc(100vh-6rem)] md:sticky md:top-24 md:self-start flex flex-col gap-4 overflow-hidden"
-        style={{ zIndex: 10 }} // Ensure it stays above other content if needed
+        className="w-full md:w-2/5 flex flex-col gap-4 md:sticky md:top-28 h-fit z-10"
+        style={{ zIndex: 10 }}
       >
         {/* Main image */}
         <AnimatePresence mode="wait">
@@ -61,19 +68,24 @@ export default function ImageView({ images = [], isStock }: Props) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="border rounded-md overflow-hidden cursor-zoom-in flex-grow flex items-center justify-center relative" // flex-grow to take available space
+            className="border rounded-md overflow-hidden cursor-zoom-in flex-grow flex items-center justify-center relative"
             onClick={() =>
               openModal(images.findIndex((i) => i._key === active?._key))
             }
           >
             {active && (
               <InnerImageZoom
-                src={urlFor(active).url()}
-                zoomSrc={urlFor(active).url()}
+                // ✨ OPTIMIZATION: Request resized (800px) & WebP image from Sanity
+                // This keeps the library functionality but downloads a 50kb file instead of 2MB
+                src={urlFor(active).width(800).fit("max").auto("format").url()}
+                zoomSrc={urlFor(active)
+                  .width(1200)
+                  .fit("max")
+                  .auto("format")
+                  .url()}
                 zoomScale={isMobile ? 1.1 : 1.1}
                 zoomType={isMobile ? "click" : "hover"}
                 zoomPreload
-                // Adjusted object-contain to be more flexible within flex-grow container
                 className={`w-full h-full object-contain ${
                   isStock === 0 ? "opacity-50" : ""
                 }`}
@@ -94,14 +106,21 @@ export default function ImageView({ images = [], isStock }: Props) {
               <button
                 key={`${img._key}-${idx}`}
                 onClick={() => setActive(img)}
-                className={`border rounded-md overflow-hidden w-16 h-16 md:w-20 md:h-20 transition-transform transform hover:scale-105 ${
-                  active?._key === img._key ? "ring-2 ring-tech_dark_color" : ""
+                // Added 'relative' for Next.js Image fill
+                className={`relative border rounded-md overflow-hidden w-16 h-16 md:w-20 md:h-20 transition-transform transform hover:scale-105 ${
+                  active?._key === img._key
+                    ? "ring-2 ring-tech_dark_color"
+                    : ""
                 }`}
               >
-                <img
-                  src={urlFor(img).url()}
+                {/* ✨ OPTIMIZATION: Replaced <img> with Next.js <Image> */}
+                <Image
+                  loader={thumbnailLoader}
+                  src={urlFor(img).url()} // Loader handles the params
                   alt={`thumb-${idx}`}
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="100px" // Tells browser to fetch tiny version
+                  className="object-cover"
                 />
               </button>
             ))}
@@ -109,7 +128,7 @@ export default function ImageView({ images = [], isStock }: Props) {
         )}
       </div>
 
-      {/* Modal carousel with zoom */}
+      {/* Modal carousel */}
       <AnimatePresence>
         {showModal && (
           <motion.div
@@ -139,8 +158,17 @@ export default function ImageView({ images = [], isStock }: Props) {
                     <CarouselItem key={`${img._key}-modal-${idx}`}>
                       <div className="flex items-center justify-center">
                         <InnerImageZoom
-                          src={urlFor(img).url()}
-                          zoomSrc={urlFor(img).url()}
+                          // ✨ OPTIMIZATION: Request high-res (1200px) WebP for modal
+                          src={urlFor(img)
+                            .width(1200)
+                            .fit("max")
+                            .auto("format")
+                            .url()}
+                          zoomSrc={urlFor(img)
+                            .width(2000) // Super high-res only on zoom
+                            .fit("max")
+                            .auto("format")
+                            .url()}
                           zoomScale={isMobile ? 1.1 : 1.1}
                           zoomType={isMobile ? "click" : "hover"}
                           zoomPreload

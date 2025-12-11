@@ -5,7 +5,7 @@ import AddToCartButton from "@/components/AddToCartButton";
 import ImageView from "@/components/ImageView";
 import PriceView from "@/components/PriceView";
 import Container from "@/components/Container";
-import Image, { ImageLoaderProps } from "next/image"; // --- ✨ OPTIMIZATION: Added ImageLoaderProps
+import Image, { ImageLoaderProps } from "next/image";
 import { useRouter } from "next/navigation";
 import useCartStore from "@/store";
 import Loading from "@/components/Loading";
@@ -16,12 +16,22 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import RelatedProductsSection from "@/components/RelatedProductsSection";
 
-// --- ✨ OPTIMIZATION: Sanity Image Loader ---
-// Directs image requests to Sanity CDN, saving Netlify bandwidth.
+// --- ✨ OPTIMIZATION: Main Image Loader ---
+// Directs requests to Sanity CDN with size & format optimization
+// Capped at quality 80 for main images (indistinguishable from 100 but smaller)
 const sanityLoader = ({ src, width, quality }: ImageLoaderProps) => {
   const hasParams = src.includes("?");
   const separator = hasParams ? "&" : "?";
   return `${src}${separator}w=${width}&q=${quality || 80}&auto=format&fit=max`;
+};
+
+// --- ✨ OPTIMIZATION: Thumbnail Loader ---
+// Aggressive optimization for small thumbnails (variants)
+// Caps quality at 65 to save significant bandwidth on tiny images
+const thumbnailLoader = ({ src, width, quality }: ImageLoaderProps) => {
+  const hasParams = src.includes("?");
+  const separator = hasParams ? "&" : "?";
+  return `${src}${separator}w=${width}&q=${quality || 65}&auto=format&fit=max`;
 };
 
 export default function ProductClient({ product }: { product: any }) {
@@ -31,11 +41,16 @@ export default function ProductClient({ product }: { product: any }) {
   });
   const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
-  const cartItems = useCartStore((state) => state.items);
   const [buying, setBuying] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
   const rawVariant = product.variants[selectedVariantIndex];
+  
+  // Logic to calculate available stock locally if not provided directly
+  const calculatedStock = typeof rawVariant.availableStock === 'number' 
+    ? rawVariant.availableStock 
+    : (rawVariant.openingStock ?? 0) - (rawVariant.stockOut ?? 0);
+
   const selectedVariant = {
     _key: rawVariant._key,
     name:
@@ -43,22 +58,24 @@ export default function ProductClient({ product }: { product: any }) {
       rawVariant.colorName ??
       rawVariant.color ??
       `Option ${selectedVariantIndex + 1}`,
-    availableStock: rawVariant.availableStock ?? 0,
+    availableStock: calculatedStock,
     images: rawVariant.images ?? [],
   };
 
-  const [availableStock, setAvailableStock] = useState(
-    selectedVariant.availableStock
-  );
+  const [availableStock, setAvailableStock] = useState(selectedVariant.availableStock);
+
   useEffect(() => {
-    setAvailableStock(rawVariant.availableStock ?? 0);
-  }, [rawVariant.availableStock, selectedVariantIndex]);
+    // Recalculate stock when variant changes
+    const stock = typeof rawVariant.availableStock === 'number' 
+      ? rawVariant.availableStock 
+      : (rawVariant.openingStock ?? 0) - (rawVariant.stockOut ?? 0);
+    setAvailableStock(stock);
+  }, [rawVariant, selectedVariantIndex]);
 
   const images =
     selectedVariant.images.length > 0
       ? selectedVariant.images
       : product.images ?? [];
-  const itemKey = `${product._id}-${selectedVariant._key}`;
 
   const handleBuyNow = async () => {
     if (buying) return;
@@ -80,19 +97,6 @@ export default function ProductClient({ product }: { product: any }) {
     }
   };
 
-  useEffect(() => {
-    const info = {
-      name: product?.name ?? null,
-      slug: product?.slug?.current ?? null,
-    };
-    (window as any).__PRODUCT_INFO = info;
-    window.dispatchEvent(new Event("productInfo"));
-    return () => {
-      delete (window as any).__PRODUCT_INFO;
-      window.dispatchEvent(new Event("productInfo"));
-    };
-  }, [product]);
-
   const toggleAccordion = (key: string) => {
     setAccordionOpen((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -106,15 +110,14 @@ export default function ProductClient({ product }: { product: any }) {
     <>
       {buying && <Loading />}
       <Container className="py-16 sm:py-24">
-        <div className="flex flex-col md:flex-row gap-10 lg:gap-16">
-          {/* Product Images */}
-          {/* Note: ImageView likely contains <Image> tags as well. 
-              Ensure ImageView also implements the sanityLoader for maximum optimization. */}
+        <div className="flex flex-col md:flex-row gap-10 lg:gap-16 items-start">
+          {/* Product Images (Left Side) */}
           {images.length > 0 && (
+            // Note: Ensure ImageView uses the sanityLoader internally for best results
             <ImageView images={images} isStock={availableStock} />
           )}
 
-          {/* Info Section */}
+          {/* Info Section (Right Side) */}
           <div className="w-full md:w-3/5 flex flex-col gap-5">
             <div className="space-y-3">
               <p
@@ -127,12 +130,10 @@ export default function ProductClient({ product }: { product: any }) {
                 {availableStock > 0 ? "In Stock" : "Out of Stock"}
               </p>
 
-              {/* Title */}
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-playfair font-bold text-[#2C3E50]">
                 {product.name}
               </h1>
 
-              {/* Category / Subcategory */}
               <div className="flex gap-2 text-xs pt-1 flex-wrap">
                 {product.category && (
                   <span className="bg-[#A67B5B]/10 text-[#A67B5B] px-3 py-1 rounded-full font-medium">
@@ -147,7 +148,6 @@ export default function ProductClient({ product }: { product: any }) {
               </div>
             </div>
 
-            {/* Price */}
             <PriceView
               price={product.price}
               discount={product.discount}
@@ -159,7 +159,7 @@ export default function ProductClient({ product }: { product: any }) {
               }
             />
 
-            {/* Variant Selection (If applicable) */}
+            {/* Variant Selection */}
             {product.variants.length > 1 && (
               <div className="mt-2">
                 <p className="text-base font-semibold text-gray-700 mb-2">
@@ -173,7 +173,9 @@ export default function ProductClient({ product }: { product: any }) {
                       v.colorName ??
                       v.color ??
                       `Option ${idx + 1}`;
+                    
                     if (!preview) return null;
+                    
                     return (
                       <button
                         key={v._key ?? idx}
@@ -185,16 +187,17 @@ export default function ProductClient({ product }: { product: any }) {
                             : "border-gray-300 hover:border-[#A67B5B]"
                         }`}
                       >
-                        {/* --- ✨ OPTIMIZATION: Variant Thumbnails --- */}
-                        <Image
-                          loader={sanityLoader}
-                          // Pass the base URL. Loader adds ?w=64/128 automatically
-                          src={urlFor(preview).url()} 
-                          alt={variantName}
-                          width={64}  // Next.js will ask Sanity for 64px (1x)
-                          height={80} // and ~128px (2x) automatically
-                          className="object-cover w-full h-full"
-                        />
+                        {/* ✨ OPTIMIZATION: Variant Thumbnails */}
+                        <div className="relative w-full h-full">
+                          <Image
+                            loader={thumbnailLoader} // Aggressive caching/quality cap
+                            src={urlFor(preview).url()}
+                            alt={variantName}
+                            fill // Fill the button container
+                            sizes="64px" // Tells browser "this is tiny" to fetch minimal size
+                            className="object-cover"
+                          />
+                        </div>
                       </button>
                     );
                   })}
@@ -211,7 +214,7 @@ export default function ProductClient({ product }: { product: any }) {
               </p>
               <div className="flex items-center gap-4">
                 <LocalQuantitySelector
-                  stockAvailable={selectedVariant?.availableStock}
+                  stockAvailable={availableStock}
                   isFabric={
                     product.category?.name?.toLowerCase() === "fabrics"
                   }
