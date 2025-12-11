@@ -80,9 +80,9 @@ const SuccessPage = () => {
 
   if (!validAccess) return null;
 
-  const bankDetails = `Amrin fabrics
-xxxxxxxx
-xxxxxx Bank Dehiwala`;
+  const bankDetails = `Ambrin
+200050086362
+Nations Trust Bank Wellawatte`;
 
   const containerVariants = {
     hidden: { opacity: 0 },
