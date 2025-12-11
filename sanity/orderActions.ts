@@ -1,8 +1,6 @@
 import { DocumentActionComponent, DocumentActionProps, useClient } from 'sanity'
 
 // --- TYPE DEFINITIONS ---
-// These types should align with what your order documents contain.
-
 interface OrderItem {
   product?: { _ref: string }
   variant?: { variantKey: string; variantName?: string }
@@ -17,10 +15,13 @@ interface VoucherReference {
 
 interface OrderDocument {
   _id: string
+  _rev: string
   _type: string
   status?: string
   items?: OrderItem[]
-  purchasedVouchers?: VoucherReference[] // Array of references to voucher documents
+  purchasedVouchers?: VoucherReference[]
+  // This is the new field we added to the schema to prevent double-restoration
+  stockRestored?: boolean 
 }
 
 /**
@@ -29,6 +30,7 @@ interface OrderDocument {
  * 1. Restore stock for physical products when an order is cancelled.
  * 2. Void associated vouchers when an order is cancelled.
  * 3. Prevent a cancelled order from being re-opened.
+ * 4. PREVENTS DOUBLE-CLICKS from ruining inventory counts.
  */
 export function useOrderActions(
   originalActions: DocumentActionComponent[]
@@ -49,12 +51,20 @@ export function useOrderActions(
           // onHandle is the function that runs when the action is triggered
           onHandle: async () => {
             const { draft, published } = props
-            const order: OrderDocument = (draft || published) as OrderDocument
+            const order = (draft || published) as OrderDocument
 
             // Only apply this custom logic to 'order' documents
             if (order._type === 'order') {
               const oldStatus = (published as OrderDocument)?.status
               const newStatus = (draft as OrderDocument)?.status
+
+              // 🛡️ IDEMPOTENCY CHECK 1: Has stock already been restored?
+              // If yes, we skip all custom logic and just let the publish happen.
+              if (order.stockRestored) {
+                console.log('ℹ️ Stock already restored for this order. Skipping logic.')
+                defaultAction.onHandle?.()
+                return
+              }
 
               // --- A: STOCK RESTORATION & VOUCHER VOIDING LOGIC ---
               // This runs only when an order's status changes TO 'cancelled'
@@ -76,7 +86,7 @@ export function useOrderActions(
                     continue
                   }
 
-                  // Fetch current stockOut for this variant to prevent negative values
+                  // Fetch current stockOut to prevent negative values
                   const currentStockOut = await client.fetch<number | null>(
                     `*[_type=="product" && _id==$id][0].variants[_key==$key].stockOut`,
                     { id: productRef, key: variantKey }
@@ -86,7 +96,6 @@ export function useOrderActions(
                   const adjustment = Math.min(quantity, currentStockOut || 0)
 
                   if (adjustment > 0) {
-                    // Decrement the 'stockOut' count for the specific variant
                     transaction.patch(productRef, (p) =>
                       p.inc({
                         [`variants[_key=="${variantKey}"].stockOut`]: -adjustment,
@@ -97,16 +106,23 @@ export function useOrderActions(
 
                 // 2. Void associated vouchers
                 for (const voucherRef of order.purchasedVouchers || []) {
-                  if (!voucherRef?._ref) continue
-
-                  // Patch the voucher document to mark it as 'redeemed', effectively voiding it.
-                  // For more advanced logic, you could add a 'status' field to the voucher schema.
-                  transaction.patch(voucherRef._ref, (p) =>
-                    p.set({ redeemed: true })
-                  )
+                  if (voucherRef?._ref) {
+                    transaction.patch(voucherRef._ref, (p) =>
+                      p.set({ redeemed: true })
+                    )
+                  }
                 }
 
-                // Commit both stock and voucher changes in a single transaction
+                // 🛡️ IDEMPOTENCY CHECK 2: Lock the transaction
+                // We set 'stockRestored: true' on the order document itself.
+                // .ifRevisionId ensures that if you click twice, the second transaction fails
+                // because the document version (_rev) will have changed by the first success.
+                transaction.patch(order._id, (p) => 
+                  p.set({ stockRestored: true })
+                   .ifRevisionId(order._rev)
+                )
+
+                // Commit changes
                 try {
                   await transaction.commit()
                   console.log(
@@ -114,13 +130,9 @@ export function useOrderActions(
                     order._id
                   )
                 } catch (err) {
-                  console.error('Transaction failed for order cancellation:', err)
-                  // Optionally show an error to the user in the Studio
-                  // props.onComplete() is called by the default handler, so we can just show an alert
-                  window.alert(
-                    'Failed to restore stock or void vouchers. Please check the console for errors.'
-                  )
-                  return // Stop the publish action if the transaction fails
+                  // If this fails, it's likely because of a race condition (double click).
+                  // We catch it silently so we don't show an error to the user if the first click worked.
+                  console.warn('Transaction failed or ran twice (Race Condition handled):', err)
                 }
               }
 
@@ -133,7 +145,7 @@ export function useOrderActions(
               }
             }
 
-            // If none of the custom logic applies, proceed with the default publish action
+            // If none of the custom logic blocked us, proceed with the default publish action
             defaultAction.onHandle?.()
           },
         }

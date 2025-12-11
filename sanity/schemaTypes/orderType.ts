@@ -133,6 +133,14 @@ export const orderType = defineType({
       type: "number",
       validation: (Rule) => Rule.required().min(0),
     }),
+    // /schemas/order.ts
+defineField({
+  name: 'stockRestored',
+  title: 'Stock Restored',
+  type: 'boolean',
+  hidden: true, // Hide it from the UI so editors don't touch it
+  initialValue: false,
+}),
   ],
 
   preview: {
