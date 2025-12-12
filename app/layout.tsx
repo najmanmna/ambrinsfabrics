@@ -18,7 +18,7 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: {
     template: "%s - ELDA",
-    default: "ELDA",
+    default: "ELDA | HOUSE OF BLOCK PRINTS",
   },
   description: "ELDA | HOUSE OF BLOCK PRINTS",
   icons: {
