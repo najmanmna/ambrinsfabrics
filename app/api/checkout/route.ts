@@ -418,7 +418,7 @@ function generateCustomerEmailHtml(data: any) {
 
         <div style="background-color: #f4f4f4; padding: 20px; text-align: center; color: #888; font-size: 12px;">
           <p style="margin: 0;">&copy; ${new Date().getFullYear()} ELDA. All rights reserved.</p>
-          <p style="margin: 5px 0;">Need help? Reply to this email.</p>
+        
         </div>
       </div>
     </body>
