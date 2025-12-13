@@ -5,17 +5,18 @@ import Image from "next/image";
 import Link from "next/link";
 // Import FaTiktok
 import { FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa";
+import { Mail } from "lucide-react"; // Imported Mail icon for the button
 
-// Import your logo - **IMPORTANT**: Update this path to your actual logo file
-import eldaLogo from "../../images/eldawhite.png"; // Assuming this path is correct relative to src
+// Import your logo
+import eldaLogo from "../../images/eldawhite.png"; 
 
-// Data for the links, making it easy to manage
+// Data for the links
 const quickLinks = [
   { href: "/", title: "Home" },
   { href: "/about", title: "About Us" },
+  // Removed "Contact Us" from here to save space
   { href: "/care-guide", title: "Care Guide" },
   { href: "/terms-and-conditions", title: "Terms & Conditions" },
-  // Corrected link spelling
   { href: "/refund-policy", title: "Exchange & Return Policy" },
   { href: "/privacy-policy", title: "Privacy Policy" },
 ];
@@ -39,10 +40,10 @@ const Footer = () => {
           <div className="flex flex-col items-center md:items-start text-center md:text-left">
             <Link href="/" className="mb-4">
               <Image
-                src={eldaLogo} // Use the imported logo
+                src={eldaLogo} 
                 alt="ELDA - House of Block Prints"
                 width={180}
-                height={60} // Adjust height if needed based on logo aspect ratio
+                height={60} 
                 className="sm:w-2xl sm:-ml-3" 
               />
             </Link>
@@ -89,44 +90,55 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Column 4: Follow Us */}
-          <div className="text-center md:text-left">
+          {/* Column 4: Follow Us & Contact */}
+          <div className="text-center md:text-left flex flex-col items-center md:items-start">
             <h3 className="text-lg font-semibold mb-5 text-[#A67B5B] uppercase tracking-wider">
               Follow Us
             </h3>
-            <div className="flex justify-center md:justify-start space-x-4"> {/* Adjusted spacing */}
+            
+            {/* Social Icons */}
+            <div className="flex justify-center md:justify-start space-x-4 mb-8">
               <a
-                href="https://www.facebook.com/eldaclothinglk" // Updated URL
+                href="https://www.facebook.com/eldaclothinglk"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
-                // THEME: Updated icon styling
                 className="p-3 border border-gray-600 rounded-md text-gray-300 hover:border-[#A67B5B] hover:text-[#A67B5B] transition-colors"
               >
                 <FaFacebookF size={20} />
               </a>
               <a
-                href="https://www.instagram.com/elda_houseofblockprints?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" // Updated URL
+                href="https://www.instagram.com/elda_houseofblockprints?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
-                // THEME: Updated icon styling
                 className="p-3 border border-gray-600 rounded-md text-gray-300 hover:border-[#A67B5B] hover:text-[#A67B5B] transition-colors"
               >
                 <FaInstagram size={20} />
               </a>
-              {/* Added TikTok Link */}
               <a
-                href="https://www.tiktok.com/@eldalk?is_from_webapp=1&sender_device=pc" // Updated URL
+                href="https://www.tiktok.com/@eldalk?is_from_webapp=1&sender_device=pc"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="TikTok"
-                // THEME: Updated icon styling
                 className="p-3 border border-gray-600 rounded-md text-gray-300 hover:border-[#A67B5B] hover:text-[#A67B5B] transition-colors"
               >
                 <FaTiktok size={20} />
               </a>
             </div>
+
+            {/* NEW: Contact Us Button */}
+            <h3 className="text-lg font-semibold mb-3 text-[#A67B5B] uppercase tracking-wider">
+              Get in Touch
+            </h3>
+            <Link
+              href="/contact"
+              className="group flex items-center gap-2 px-6 py-2 border border-[#A67B5B] rounded-md text-[#A67B5B] hover:bg-[#A67B5B] hover:text-white transition-all duration-300"
+            >
+              <Mail size={18} />
+              <span>Contact Us</span>
+            </Link>
+
           </div>
         </div>
 

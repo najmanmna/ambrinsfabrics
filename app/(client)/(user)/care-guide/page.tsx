@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Container from "@/components/Container";
 import Link from "next/link";
 import { Droplets, Wind, ThermometerSun, Sparkles, Clock, MapPin, Phone } from "lucide-react";
+import { FaTiktok } from "react-icons/fa";
 
 // Custom Social Icons for brand consistency
 const InstagramIcon = ({ className }: { className?: string }) => (
@@ -142,9 +143,9 @@ const CareGuidePage = () => {
                         <div className="text-center md:text-left">
                             <h3 className="font-serif text-xl font-medium text-[#2C3E50] mb-4">Follow Our Journey</h3>
                              <div className="flex items-center justify-center md:justify-start gap-5">
-                                <Link href="#" target="_blank" className="text-gray-500 hover:text-[#A67B5B] transition-colors"><InstagramIcon className="w-6 h-6" /></Link>
-                                <Link href="#" target="_blank" className="text-gray-500 hover:text-[#A67B5B] transition-colors"><FacebookIcon className="w-6 h-6" /></Link>
-                                <Link href="#" target="_blank" className="text-gray-500 hover:text-[#A67B5B] transition-colors"><TikTokIcon className="w-6 h-6" /></Link>
+                                <Link href="https://www.instagram.com/elda_houseofblockprints?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" className="text-gray-500 hover:text-[#A67B5B] transition-colors"><InstagramIcon className="w-6 h-6" /></Link>
+                                <Link href="https://www.facebook.com/eldaclothinglk" target="_blank" className="text-gray-500 hover:text-[#A67B5B] transition-colors"><FacebookIcon className="w-6 h-6" /></Link>
+                                <Link href="https://www.tiktok.com/@eldalk?is_from_webapp=1&sender_device=pc" target="_blank" className="text-gray-500 hover:text-[#A67B5B] transition-colors"><FaTiktok className="w-6 h-6" /></Link>
                             </div>
                         </div>
                     </div>
