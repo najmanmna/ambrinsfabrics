@@ -10,6 +10,7 @@ import Footer from "@/components/common/Footer";
 import LinkBadge from "@/components/common/LinkBadge";
 
 import "./globals.css";
+import LoomLines from "@/components/ui/LoomLines";
 
 // Configure Cormorant Garamond for Headings
 const cormorant = Cormorant_Garamond({
@@ -38,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${cormorant.variable} antialiased bg-ambrins_linen text-ambrins_black relative font-body`}
+        className={`${cormorant.variable} bg-transparent antialiased  text-ambrins_black relative font-body`}
       >
         {/* --- 1. Fixed Header --- */}
         {/* <Header /> */}
@@ -56,7 +57,7 @@ export default function RootLayout({
         {/* <Footer /> */}
 
         {/* --- 5. Global Utilities --- */}
-        
+        {/* <LoomLines /> */}
         {/* Luxury Themed Notifications */}
         <HotToaster
           position="bottom-right"

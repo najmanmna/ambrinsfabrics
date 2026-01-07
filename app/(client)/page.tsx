@@ -10,10 +10,12 @@ import SensorySection from "@/components/SensorySection";
 import VisitStudio from "@/components/VisitStudio";
 import FeaturedFabrics from "@/components/FeaturedFabrics";
 import ShopByCategory from "@/components/ShopByCategory";
+import PatternBackground from "@/components/ui/PatternBackground";
 
 export default async function Home() {
   return (
     <div className="relative">
+      {/* <PatternBackground  /> */}
 
         <Hero />
         {/* <MoreThanJustYardage /> */}

@@ -17,7 +17,7 @@ const MandalaWatermark = ({ className }: { className?: string }) => (
 
 const PhilosophySection = () => {
   return (
-    <section className="relative w-full py-24 bg-ambrins_light overflow-hidden">
+    <section className="relative w-full py-24  overflow-hidden">
       
       {/* Decorative Side Element (Left) */}
       <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-ambrins_primary to-ambrins_secondary opacity-20 hidden md:block" />

@@ -35,7 +35,7 @@ const FeaturedFabrics = async () => {
   }
 
   return (
-    <section className="w-full py-16 md:py-24 bg-ambrins_light border-b border-ambrins_dark/5">
+    <section className="w-full py-16 md:py-24  border-b border-ambrins_dark/5">
       <div className="container mx-auto max-w-[1920px]"> {/* Wide container for maximum visibility */}
         
         {/* --- 1. Vibrant Header --- */}

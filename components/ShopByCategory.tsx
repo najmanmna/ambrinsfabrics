@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { client } from "@/sanity/lib/client";
 import { Sparkles } from "lucide-react";
+import PatternBackground from "./ui/PatternBackground";
 
 // --- FETCH CATEGORIES (Increased to 20) ---
 async function getCategories() {
@@ -30,7 +31,8 @@ const ShopByCategory = async () => {
   if (!categories || categories.length === 0) return null;
 
   return (
-    <section className="relative w-full py-20 bg-ambrins_light overflow-hidden">
+    <section className="relative w-full py-20  overflow-hidden">
+      {/* <PatternBackground /> */}
       
       {/* --- Background Decor --- */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] text-ambrins_secondary pointer-events-none z-0 opacity-20">
