@@ -143,7 +143,8 @@ const ProductCard = ({
 
           {/* Title */}
           {slug ? (
-            <Link href={`/product/${slug}`}>
+                  <Link href={`/`}>
+            {/* // <Link href={`/product/${slug}`}> */}
                 <Title className="font-heading text-lg text-ambrins_dark leading-tight line-clamp-2 group-hover:text-ambrins_primary transition-colors duration-300">
                 {product?.name}
                 </Title>

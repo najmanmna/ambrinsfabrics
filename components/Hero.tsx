@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowDown } from "lucide-react";
-import herobg from "@/images/hero_image.png"; 
+import herobg from "@/images/hero_image1.png"; 
 import Image from "next/image";
 
 const Hero = () => {
