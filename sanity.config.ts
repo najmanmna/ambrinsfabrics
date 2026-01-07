@@ -11,7 +11,7 @@ import { ordersSummaryTool } from "./sanity/views/ordersSummaryTool";
 
 export default defineConfig({
   basePath: "/admin/studio",
-  projectId: "nvemp4zk",
+  projectId: "vxrs2vrl",
   dataset: "production",
   schema,
    document: {

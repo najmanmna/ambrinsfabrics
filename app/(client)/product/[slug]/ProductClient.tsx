@@ -1,93 +1,113 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { urlFor } from "@/sanity/lib/image";
 import AddToCartButton from "@/components/AddToCartButton";
 import ImageView from "@/components/ImageView";
 import PriceView from "@/components/PriceView";
-import Container from "@/components/Container";
 import Image, { ImageLoaderProps } from "next/image";
 import { useRouter } from "next/navigation";
 import useCartStore from "@/store";
 import Loading from "@/components/Loading";
 import toast from "react-hot-toast";
 import { PortableText } from "@portabletext/react";
-import LocalQuantitySelector from "@/components/LocalQuantitySelector";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import RelatedProductsSection from "@/components/RelatedProductsSection";
+import { ChevronDown, Minus, Plus, ShieldCheck, Truck, Sparkles, Ruler } from "lucide-react";
 
-// --- ✨ OPTIMIZATION: Main Image Loader ---
-// Directs requests to Sanity CDN with size & format optimization
-// Capped at quality 80 for main images (indistinguishable from 100 but smaller)
-const sanityLoader = ({ src, width, quality }: ImageLoaderProps) => {
-  const hasParams = src.includes("?");
-  const separator = hasParams ? "&" : "?";
-  return `${src}${separator}w=${width}&q=${quality || 80}&auto=format&fit=max`;
-};
-
-// --- ✨ OPTIMIZATION: Thumbnail Loader ---
-// Aggressive optimization for small thumbnails (variants)
-// Caps quality at 65 to save significant bandwidth on tiny images
+// --- LOADERS ---
 const thumbnailLoader = ({ src, width, quality }: ImageLoaderProps) => {
   const hasParams = src.includes("?");
   const separator = hasParams ? "&" : "?";
   return `${src}${separator}w=${width}&q=${quality || 65}&auto=format&fit=max`;
 };
 
+// --- SUB-COMPONENT: Custom Quantity Selector ---
+const ModernQuantitySelector = ({ 
+  quantity, 
+  setQuantity, 
+  stock, 
+  isFabric 
+}: { 
+  quantity: number; 
+  setQuantity: (q: number) => void; 
+  stock: number;
+  isFabric: boolean;
+}) => {
+  const increment = () => {
+    if (quantity < stock) setQuantity(quantity + 1);
+  };
+  const decrement = () => {
+    if (quantity > 1) setQuantity(quantity - 1);
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-xs font-bold uppercase tracking-widest text-ambrins_secondary">
+        {isFabric ? "Length (Meters)" : "Quantity"}
+      </span>
+      <div className="flex items-center w-max border border-ambrins_dark/20 rounded-sm overflow-hidden bg-white">
+        <button 
+          onClick={decrement}
+          disabled={quantity <= 1}
+          className="w-12 h-12 flex items-center justify-center hover:bg-ambrins_light disabled:opacity-30 transition-colors text-ambrins_dark"
+        >
+          <Minus size={16} />
+        </button>
+        <div className="w-16 h-12 flex items-center justify-center font-heading text-xl font-bold text-ambrins_dark border-x border-ambrins_dark/10">
+          {quantity}
+        </div>
+        <button 
+          onClick={increment}
+          disabled={quantity >= stock}
+          className="w-12 h-12 flex items-center justify-center hover:bg-ambrins_light disabled:opacity-30 transition-colors text-ambrins_dark"
+        >
+          <Plus size={16} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default function ProductClient({ product }: { product: any }) {
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
-  const [accordionOpen, setAccordionOpen] = useState<{ [key: string]: boolean }>({
-    shipping: false,
-  });
+  const [expandedSection, setExpandedSection] = useState<string | null>("description");
   const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
   const [buying, setBuying] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
-  const rawVariant = product.variants[selectedVariantIndex];
+  // --- LOGIC: Variant & Stock Handling ---
   
-  // Logic to calculate available stock locally if not provided directly
-  const calculatedStock = typeof rawVariant.availableStock === 'number' 
-    ? rawVariant.availableStock 
-    : (rawVariant.openingStock ?? 0) - (rawVariant.stockOut ?? 0);
-
-  const selectedVariant = {
-    _key: rawVariant._key,
-    name:
-      rawVariant.variantName ??
-      rawVariant.colorName ??
-      rawVariant.color ??
-      `Option ${selectedVariantIndex + 1}`,
-    availableStock: calculatedStock,
-    images: rawVariant.images ?? [],
+  const rawVariant = product.variants?.[selectedVariantIndex];
+  
+  const calculateStock = (variant: any) => {
+    return typeof variant?.availableStock === 'number' 
+      ? variant.availableStock 
+      : (variant?.openingStock ?? 0) - (variant?.stockOut ?? 0);
   };
 
-  const [availableStock, setAvailableStock] = useState(selectedVariant.availableStock);
+  const currentStock = rawVariant ? calculateStock(rawVariant) : 0;
+  
+  const selectedVariant = {
+    _key: rawVariant?._key,
+    name: rawVariant?.variantName ?? rawVariant?.colorName ?? `Option ${selectedVariantIndex + 1}`,
+    availableStock: currentStock,
+    images: rawVariant?.images ?? [],
+  };
 
-  useEffect(() => {
-    // Recalculate stock when variant changes
-    const stock = typeof rawVariant.availableStock === 'number' 
-      ? rawVariant.availableStock 
-      : (rawVariant.openingStock ?? 0) - (rawVariant.stockOut ?? 0);
-    setAvailableStock(stock);
-  }, [rawVariant, selectedVariantIndex]);
-
-  const images =
-    selectedVariant.images.length > 0
-      ? selectedVariant.images
-      : product.images ?? [];
+  // If variant has no images, fallback to main product images
+  const displayImages = selectedVariant.images.length > 0 
+    ? selectedVariant.images 
+    : product.images ?? [];
 
   const handleBuyNow = async () => {
     if (buying) return;
-    if (availableStock < quantity) {
-      toast.error("Not enough stock available for the selected quantity.");
+    if (currentStock < quantity) {
+      toast.error("Not enough stock available.");
       return;
     }
-    if (quantity <= 0) {
-      toast.error("Please select a valid quantity.");
-      return;
-    }
-
     setBuying(true);
     try {
       addItem(product, selectedVariant, quantity);
@@ -97,280 +117,236 @@ export default function ProductClient({ product }: { product: any }) {
     }
   };
 
-  const toggleAccordion = (key: string) => {
-    setAccordionOpen((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const accordionHeaderStyle =
-    "w-full text-left px-4 py-3 font-semibold text-lg text-[#2C3E50] font-playfair flex justify-between items-center border-b border-gray-200";
-  const accordionContentStyle =
-    "px-4 py-4 text-gray-700 text-sm space-y-3 leading-relaxed border-b border-gray-200";
+  const isFabric = product.category?.name?.toLowerCase().includes("fabric");
 
   return (
     <>
       {buying && <Loading />}
-      <Container className="py-16 sm:py-24">
-        <div className="flex flex-col md:flex-row gap-10 lg:gap-16 items-start">
-          {/* Product Images (Left Side) */}
-          {images.length > 0 && (
-            // Note: Ensure ImageView uses the sanityLoader internally for best results
-            <ImageView images={images} isStock={availableStock} />
-          )}
-
-          {/* Info Section (Right Side) */}
-          <div className="w-full md:w-3/5 flex flex-col gap-5">
-            <div className="space-y-3">
-              <p
-                className={`inline-block text-xs py-1 px-3 font-semibold rounded-full ${
-                  availableStock > 0
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700"
-                }`}
-              >
-                {availableStock > 0 ? "In Stock" : "Out of Stock"}
-              </p>
-
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-playfair font-bold text-[#2C3E50]">
-                {product.name}
-              </h1>
-
-              <div className="flex gap-2 text-xs pt-1 flex-wrap">
-                {product.category && (
-                  <span className="bg-[#A67B5B]/10 text-[#A67B5B] px-3 py-1 rounded-full font-medium">
-                    {product.category.name}
-                  </span>
-                )}
-                {product.subcategory && (
-                  <span className="bg-[#A67B5B]/10 text-[#A67B5B] px-3 py-1 rounded-full font-medium">
-                    {product.subcategory.name}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <PriceView
-              price={product.price}
-              discount={product.discount}
-              className="text-2xl font-bold text-[#2C3E50]"
-              unitLabel={
-                product.category?.name?.toLowerCase() === "fabrics"
-                  ? "/meter"
-                  : undefined
-              }
-            />
-
-            {/* Variant Selection */}
-            {product.variants.length > 1 && (
-              <div className="mt-2">
-                <p className="text-base font-semibold text-gray-700 mb-2">
-                  Select Color/Variant:
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  {product.variants.map((v: any, idx: number) => {
-                    const preview = v.images?.[0];
-                    const variantName =
-                      v.variantName ??
-                      v.colorName ??
-                      v.color ??
-                      `Option ${idx + 1}`;
-                    
-                    if (!preview) return null;
-                    
-                    return (
-                      <button
-                        key={v._key ?? idx}
-                        onClick={() => setSelectedVariantIndex(idx)}
-                        title={variantName}
-                        className={`w-16 h-20 border rounded-md overflow-hidden transition-all duration-200 ${
-                          idx === selectedVariantIndex
-                            ? "ring-2 ring-offset-2 ring-[#A67B5B]"
-                            : "border-gray-300 hover:border-[#A67B5B]"
-                        }`}
-                      >
-                        {/* ✨ OPTIMIZATION: Variant Thumbnails */}
-                        <div className="relative w-full h-full">
-                          <Image
-                            loader={thumbnailLoader} // Aggressive caching/quality cap
-                            src={urlFor(preview).url()}
-                            alt={variantName}
-                            fill // Fill the button container
-                            sizes="64px" // Tells browser "this is tiny" to fetch minimal size
-                            className="object-cover"
-                          />
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+      
+      <div className="bg-ambrins_light min-h-screen">
+        <div className="container mx-auto px-4 md:px-8 max-w-[1600px] py-12">
+          
+          {/* --- BREADCRUMBS --- */}
+          <nav className="text-[10px] uppercase tracking-[0.2em] font-bold text-ambrins_text/60 mb-8 flex flex-wrap gap-2">
+            <Link href="/" className="hover:text-ambrins_primary transition-colors">Home</Link>
+            <span>/</span>
+            <Link href="/shop" className="hover:text-ambrins_primary transition-colors">Shop</Link>
+            {product.category && (
+              <>
+                <span>/</span>
+                <span className="text-ambrins_secondary">{product.category.name}</span>
+              </>
             )}
+          </nav>
 
-            {/* Quantity Selector */}
-            <div className="flex flex-col gap-2 mt-4">
-              <p className="text-base font-semibold text-gray-700">
-                {product.category?.name?.toLowerCase() === "fabrics"
-                  ? "Quantity (in meters):"
-                  : "Quantity:"}
-              </p>
-              <div className="flex items-center gap-4">
-                <LocalQuantitySelector
-                  stockAvailable={availableStock}
-                  isFabric={
-                    product.category?.name?.toLowerCase() === "fabrics"
-                  }
-                  onChange={(q) => setQuantity(q)}
-                />
-                <p className="text-sm text-gray-500">
-                  {`Available: ${availableStock}${
-                    product.category?.name?.toLowerCase() === "fabrics"
-                      ? " m"
-                      : ""
-                  }`}
-                </p>
-              </div>
+          <div className="flex flex-col lg:flex-row gap-12 xl:gap-20">
+            
+            {/* --- LEFT: STICKY IMAGE GALLERY --- */}
+            <div className="w-full lg:w-3/5 lg:sticky lg:top-24 h-fit">
+               {/* Pass props to your existing ImageView or use a new one */}
+               {/* Ensuring generic fallback if ImageView is strict about types */}
+               <ImageView images={displayImages} isStock={currentStock} />
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-stretch gap-4 mt-6">
-              <AddToCartButton
-                product={product}
-                variant={selectedVariant}
-                selectedQuantity={quantity}
-                className="flex-1 bg-[#2C3E50] text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-[#46627f] transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={availableStock < quantity || quantity <= 0}
-              />
-              <button
-                onClick={handleBuyNow}
-                disabled={buying || availableStock < quantity || quantity <= 0}
-                className={`flex-1 bg-[#A67B5B] text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  buying ? "bg-gray-400" : "hover:bg-[#8e6e52]"
-                }`}
-              >
-                {buying ? "Processing..." : "Buy Now"}
-              </button>
-            </div>
-
-            {/* Accordion Sections */}
-            <div className="mt-8 w-full border border-gray-200 rounded-lg">
-              {/* Product Details - Always Open */}
-              <div>
-                <div className={accordionHeaderStyle}>
-                  PRODUCT DETAILS
+            {/* --- RIGHT: DETAILS & ACTIONS --- */}
+            <div className="w-full lg:w-2/5 flex flex-col gap-8">
+              
+              {/* HEADER */}
+              <div className="border-b border-ambrins_dark/10 pb-6">
+                <h1 className="font-heading text-4xl md:text-5xl text-ambrins_dark leading-tight mb-4">
+                  {product.name}
+                </h1>
+                
+                <div className="flex items-center justify-between">
+                   <PriceView
+                    price={product.price}
+                    discount={product.discount}
+                    className="text-3xl font-body font-medium text-ambrins_primary"
+                    unitLabel={isFabric ? "/ meter" : undefined}
+                  />
+                  
+                  {/* Stock Badge */}
+                  <div className={`px-3 py-1 text-xs font-bold uppercase tracking-widest rounded-sm ${
+                    currentStock > 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                  }`}>
+                    {currentStock > 0 ? (currentStock < 10 ? `Low Stock: Only ${currentStock} Left` : "In Stock") : "Sold Out"}
+                  </div>
                 </div>
-                <div className={accordionContentStyle}>
-                  {product.material && (
-                    <p>
-                      <span className="font-semibold">Material:</span>{" "}
-                      {product.material}
-                    </p>
-                  )}
-                  {product.width && (
-                    <p>
-                      <span className="font-semibold">Width:</span>{" "}
-                      {product.width}
-                    </p>
-                  )}
-                  {product.useCases && (
-                    <p>
-                      <span className="font-semibold">Use Cases:</span>{" "}
-                      {product.useCases}
-                    </p>
-                  )}
-                  {product.description && (
-                    <div className="prose prose-sm max-w-none text-gray-700">
-                      <span className="font-semibold block mb-1">
-                        Description:
-                      </span>
-                      <PortableText value={product.description} />
+              </div>
+
+              {/* PURCHASE CARD (The "Control Panel") */}
+              <div className="bg-white p-6 md:p-8 rounded-sm shadow-xl shadow-ambrins_secondary/5 border-t-4 border-ambrins_primary relative overflow-hidden">
+                {/* Background Decor */}
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                   <Sparkles className="text-ambrins_secondary w-20 h-20" />
+                </div>
+
+                {/* 1. VARIANTS */}
+                {product.variants?.length > 1 && (
+                  <div className="mb-8">
+                    <span className="text-xs font-bold uppercase tracking-widest text-ambrins_secondary block mb-3">
+                      Select Variant: <span className="text-ambrins_dark">{selectedVariant.name}</span>
+                    </span>
+                    <div className="flex flex-wrap gap-3">
+                      {product.variants.map((v: any, idx: number) => {
+                         const preview = v.images?.[0];
+                         const isActive = idx === selectedVariantIndex;
+                         
+                         return (
+                           <button
+                             key={v._key ?? idx}
+                             onClick={() => setSelectedVariantIndex(idx)}
+                             className={`relative w-14 h-14 rounded-sm overflow-hidden transition-all duration-300 ${
+                               isActive 
+                                 ? "ring-2 ring-offset-2 ring-ambrins_primary scale-110 shadow-lg" 
+                                 : "opacity-70 hover:opacity-100 hover:ring-1 hover:ring-ambrins_dark/20"
+                             }`}
+                           >
+                              {preview && (
+                                <Image
+                                  loader={thumbnailLoader}
+                                  src={urlFor(preview).url()}
+                                  alt={v.variantName || "Variant"}
+                                  fill
+                                  className="object-cover"
+                                />
+                              )}
+                           </button>
+                         )
+                      })}
                     </div>
-                  )}
-                  <p>
-                    Please see{" "}
-                    <Link
-                      href="/care-guide"
-                      className="text-[#A67B5B] underline hover:text-[#2C3E50]"
-                    >
-                      Care Guide
-                    </Link>
-                    .
-                  </p>
-                  {!product.material &&
-                    !product.width &&
-                    !product.useCases &&
-                    !product.description && (
-                      <p className="italic text-gray-500">
-                        More details coming soon.
-                      </p>
-                    )}
+                  </div>
+                )}
+
+                {/* 2. QUANTITY & ADD TO CART */}
+                <div className="flex flex-col gap-6">
+                   <ModernQuantitySelector 
+                      quantity={quantity} 
+                      setQuantity={setQuantity} 
+                      stock={currentStock}
+                      isFabric={!!isFabric}
+                   />
+
+                   <div className="flex flex-col sm:flex-row gap-4">
+                      <AddToCartButton
+                        product={product}
+                        variant={selectedVariant}
+                        selectedQuantity={quantity}
+                        className="flex-1 bg-ambrins_dark text-white font-body text-sm font-bold uppercase tracking-[0.2em] py-4 hover:bg-ambrins_primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                        disabled={currentStock < quantity || quantity <= 0}
+                      />
+                      
+                      <button
+                        onClick={handleBuyNow}
+                        disabled={buying || currentStock < quantity || quantity <= 0}
+                        className="flex-1 border border-ambrins_dark text-ambrins_dark font-body text-sm font-bold uppercase tracking-[0.2em] py-4 hover:bg-ambrins_dark hover:text-white transition-colors disabled:opacity-50"
+                      >
+                        {buying ? "Processing..." : "Buy Now"}
+                      </button>
+                   </div>
                 </div>
               </div>
 
-              {/* Shipping & Returns - Toggleable */}
-              <div>
-                <button
-                  onClick={() => toggleAccordion("shipping")}
-                  className={accordionHeaderStyle}
-                >
-                  SHIPPING & RETURNS
-                  <motion.span
-                    animate={{ rotate: accordionOpen["shipping"] ? 180 : 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="text-lg"
+              {/* ACCORDION INFO (Description, Shipping, etc.) */}
+              <div className="border-t border-ambrins_dark/10">
+                
+                {/* Item 1: Description */}
+                <div className="border-b border-ambrins_dark/10">
+                  <button 
+                    onClick={() => setExpandedSection(expandedSection === "description" ? null : "description")}
+                    className="w-full py-4 flex items-center justify-between text-left group"
                   >
-                    ▼
-                  </motion.span>
-                </button>
-                <AnimatePresence>
-                  {accordionOpen["shipping"] && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                      className="overflow-hidden"
-                    >
-                      <div className={accordionContentStyle}>
-                        <p>
-                          <span className="font-semibold">
-                            Estimated Delivery:
-                          </span>{" "}
-                          3–5 working days within Sri Lanka.
-                        </p>
-                        <p>
-                          <span className="font-semibold">
-                            Shipping Costs:
-                          </span>{" "}
-                          Calculated at checkout based on your delivery address.
-                        </p>
-                        <p>
-                          <span className="font-semibold">
-                            Returns & Exchanges:
-                          </span>{" "}
-                          Fabrics cut to order are generally non-returnable
-                          unless defective or incorrect. Other items (beddings,
-                          clothing, accessories) may be exchanged within 7 days
-                          if unused and in original condition.
-                        </p>
-                        <p>
-                          Please see our full{" "}
-                          <Link
-                            href="/refund-policy"
-                            className="text-[#A67B5B] underline hover:text-[#2C3E50]"
-                          >
-                            Exchange & Return Policy
-                          </Link>{" "}
-                          for details.
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    <span className="font-heading text-xl text-ambrins_dark group-hover:text-ambrins_primary transition-colors">Description & Details</span>
+                    <ChevronDown className={`w-5 h-5 text-ambrins_secondary transition-transform duration-300 ${expandedSection === "description" ? "rotate-180" : ""}`} />
+                  </button>
+                  <AnimatePresence>
+                    {expandedSection === "description" && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pb-6 text-ambrins_text/80 text-sm leading-relaxed space-y-4">
+                           {/* Quick Specs Grid */}
+                           <div className="grid grid-cols-2 gap-4 bg-white p-4 rounded-sm border border-ambrins_dark/5 mb-4">
+                              {product.material && (
+                                <div><span className="block text-[10px] uppercase text-ambrins_secondary font-bold">Material</span> {product.material}</div>
+                              )}
+                              {product.width && (
+                                <div><span className="block text-[10px] uppercase text-ambrins_secondary font-bold">Width</span> {product.width}</div>
+                              )}
+                           </div>
+                           
+                           {/* Rich Text */}
+                           {product.description ? (
+                              <div className="prose prose-sm prose-headings:font-heading prose-a:text-ambrins_primary">
+                                <PortableText value={product.description} />
+                              </div>
+                           ) : (
+                             <p>Experience the luxury of {product.name}. Perfect for your next creation.</p>
+                           )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Item 2: Shipping & Care */}
+                <div className="border-b border-ambrins_dark/10">
+                  <button 
+                    onClick={() => setExpandedSection(expandedSection === "shipping" ? null : "shipping")}
+                    className="w-full py-4 flex items-center justify-between text-left group"
+                  >
+                    <span className="font-heading text-xl text-ambrins_dark group-hover:text-ambrins_primary transition-colors">Shipping & Care</span>
+                    <ChevronDown className={`w-5 h-5 text-ambrins_secondary transition-transform duration-300 ${expandedSection === "shipping" ? "rotate-180" : ""}`} />
+                  </button>
+                  <AnimatePresence>
+                    {expandedSection === "shipping" && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pb-6 text-ambrins_text/80 text-sm leading-relaxed space-y-4">
+                           <div className="flex items-start gap-3">
+                              <Truck className="w-5 h-5 text-ambrins_primary mt-1" />
+                              <div>
+                                <h4 className="font-bold text-ambrins_dark">Fast Delivery</h4>
+                                <p>Island-wide delivery within 3-5 working days. Next day delivery available for Colombo.</p>
+                              </div>
+                           </div>
+                           <div className="flex items-start gap-3">
+                              <ShieldCheck className="w-5 h-5 text-ambrins_primary mt-1" />
+                              <div>
+                                <h4 className="font-bold text-ambrins_dark">Quality Guarantee</h4>
+                                <p>We inspect every inch before cutting. Returns accepted for defects only on cut fabrics.</p>
+                              </div>
+                           </div>
+                           <div className="mt-4 pt-4 border-t border-ambrins_dark/5">
+                             <Link href="/care-guide" className="text-xs font-bold uppercase tracking-widest text-ambrins_secondary hover:text-ambrins_dark flex items-center gap-2">
+                               <Ruler className="w-4 h-4" /> View Full Care Guide
+                             </Link>
+                           </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
               </div>
+              
             </div>
           </div>
+
+          {/* --- BOTTOM: RELATED PRODUCTS --- */}
+          <div className="mt-24 pt-12 border-t border-ambrins_dark/10">
+             <RelatedProductsSection currentProduct={product} />
+          </div>
+
         </div>
-        {product && <RelatedProductsSection currentProduct={product} />}
-      </Container>
+      </div>
     </>
   );
 }

@@ -1,4 +1,5 @@
 "use client";
+
 import { Loader2, Search, X } from "lucide-react";
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import { client } from "@/sanity/lib/client";
@@ -7,11 +8,10 @@ import { urlFor } from "@/sanity/lib/image";
 import { Product } from "@/sanity.types";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import SearchLogo from "../ui/searchicon";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface SearchBarProps {
-  color?: "black" | "white"; // 👈 control icon/text color
+  color?: "black" | "white";
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ color = "black" }) => {
@@ -19,25 +19,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ color = "black" }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [featuredProduct, setFeaturedProduct] = useState<Product[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
   const [showSearch, setShowSearch] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const fetchFeaturedProducts = async () => {
-    try {
-      const query = `*[_type == "product" && isFeatured == true] | order(name asc)`;
-      const response = await client.fetch(query);
-      setFeaturedProduct(response);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchFeaturedProducts();
-  }, []);
-
+  // --- Sanity Fetch Logic ---
   const fetchProducts = useCallback(async () => {
     if (!search) {
       setProducts([]);
@@ -45,7 +31,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ color = "black" }) => {
     }
     setLoading(true);
     try {
-      const query = `*[_type == "product" && name match $search] | order(name asc)`;
+      // Adjusted query to match name or description
+      const query = `*[_type == "product" && (name match $search || description match $search)] | order(name asc)[0...5]`;
       const params = { search: `${search}*` };
       const response = await client.fetch(query, params);
       setProducts(response);
@@ -56,12 +43,13 @@ const SearchBar: React.FC<SearchBarProps> = ({ color = "black" }) => {
     }
   }, [search]);
 
+  // Debounce
   useEffect(() => {
     const t = setTimeout(fetchProducts, 300);
     return () => clearTimeout(t);
   }, [search, fetchProducts]);
 
-  // Close on outside click
+  // Click Outside to Close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -69,25 +57,29 @@ const SearchBar: React.FC<SearchBarProps> = ({ color = "black" }) => {
         !searchRef.current.contains(event.target as Node)
       ) {
         setShowResults(false);
-        setShowSearch(false);
+        if (!search) setShowSearch(false); // Only collapse if empty
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [search]);
 
+  // Auto-focus input when opened
   useEffect(() => {
     if (showSearch && inputRef.current) inputRef.current.focus();
   }, [showSearch]);
 
-  const iconColor = color === "white" ? "text-white" : "text-black";
-  const iconHoverColor =
-    color === "white" ? "hover:text-gray-300" : "hover:text-gray-600";
+  // Color Logic for Transparent Header
+  const iconColor = color === "white" ? "text-white" : "text-ambrins_black";
+  const iconHoverColor = color === "white" ? "hover:text-ambrins_gold" : "hover:text-ambrins_gold";
 
   return (
-    <div ref={searchRef} className="relative">
-      {/* Desktop icon toggle */}
-      <div className="hidden lg:block relative w-40 h-10 lg:w-[340px]">
+    <div ref={searchRef} className="relative z-50">
+      
+      {/* --- DESKTOP SEARCH TOGGLE --- */}
+      <div className="hidden lg:flex items-center justify-end relative h-10">
+        
+        {/* The Toggle Button (Visible when closed) */}
         {!showSearch && (
           <motion.button
             type="button"
@@ -95,133 +87,150 @@ const SearchBar: React.FC<SearchBarProps> = ({ color = "black" }) => {
               setShowSearch(true);
               setShowResults(true);
             }}
-            whileHover={{
-              scale: 1.15,
-            }}
-            transition={{ duration: 0.05, ease: "easeOut" }}
-            className={`absolute right-0 top-1/2 -translate-y-1/2 flex h-15 w-15 items-center justify-center ${iconColor} ${iconHoverColor}`}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`flex items-center justify-center p-2 transition-colors duration-300 ${iconColor} ${iconHoverColor}`}
           >
-            <SearchLogo />
+            <Search strokeWidth={1.5} size={20} />
           </motion.button>
         )}
-        {showSearch && (
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            className="absolute inset-0 flex items-center"
-          >
-            <Input
-              ref={inputRef}
-              placeholder="Search..."
-              className="flex-1 h-10 rounded-md focus-visible:ring-0 focus-visible:border-tech_orange bg-tech_white text-tech_dark pr-10"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onFocus={() => setShowResults(true)}
-            />
-            <button
-              type="button"
-              onClick={() => {
-                setShowResults(false);
-                setShowSearch(false);
-                setSearch("");
-              }}
-              className="absolute right-2 top-1/2 -translate-y-1/2"
+
+        {/* The Expanding Input (Visible when open) */}
+        <AnimatePresence>
+          {showSearch && (
+            <motion.form
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 300, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              onSubmit={(e) => e.preventDefault()}
+              className="absolute right-0 top-0 bottom-0 flex items-center"
             >
-              <X
-                className={`w-5 h-5 cursor-pointer ${iconColor} ${iconHoverColor}`}
-              />
-            </button>
-          </form>
-        )}
+              <div className="relative w-full">
+                <Input
+                  ref={inputRef}
+                  placeholder="Search fabrics..."
+                  className="w-full h-10 rounded-none border border-ambrins_gold/30 bg-white text-ambrins_black placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-ambrins_gold pr-10 font-body text-sm"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onFocus={() => setShowResults(true)}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowResults(false);
+                    setShowSearch(false);
+                    setSearch("");
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-ambrins_black transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </motion.form>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Mobile: always show full width input below header */}
-      <div className="block lg:hidden mt-2">
-        <form
-          onSubmit={(e) => e.preventDefault()}
-          className="flex items-center w-full"
-        >
-          <Input
-            ref={inputRef}
+      {/* --- MOBILE SEARCH (Always visible in mobile menu context) --- */}
+      <div className="block lg:hidden w-full">
+        <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
             placeholder="Search..."
-            className="flex-1 h-10 rounded-md focus-visible:ring-0 focus-visible:border-tech_orange bg-tech_white text-tech_dark pr-10"
+            className="w-full h-10 pl-10 rounded-none border border-gray-200 focus-visible:border-ambrins_gold focus-visible:ring-0 bg-white/50 text-ambrins_black font-body text-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onFocus={() => setShowResults(true)}
-          />
-          {search && (
-            <button
-              type="button"
-              onClick={() => {
-                setShowResults(false);
-                setSearch("");
-              }}
-              className="absolute right-3 top-1/2 -translate-y-1/2"
-            >
-              <X
-                className={`w-5 h-5 cursor-pointer ${iconColor} ${iconHoverColor}`}
-              />
-            </button>
-          )}
-        </form>
+            />
+            {search && (
+                <button
+                    onClick={() => {
+                        setShowResults(false);
+                        setSearch("");
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                >
+                    <X className="w-4 h-4 text-gray-400" />
+                </button>
+            )}
+        </div>
       </div>
 
-      {/* Results dropdown */}
-      {showResults && (
-        <div className="absolute top-full mt-1 left-0 right-0 bg-tech_bg_color rounded-md shadow-lg z-50 max-h-[70vh] overflow-y-auto border border-gray-200">
-          {loading ? (
-            <div className="flex items-center justify-center px-6 gap-2 py-4">
-              <Loader2 className="w-5 h-5 animate-spin text-tech_orange" />
-              <span className="font-medium text-gray-600">Searching...</span>
-            </div>
-          ) : products?.length > 0 ? (
-            <div className="py-2">
-              {products.map((product) => (
-                <Link
-                  key={product?._id}
-                  href={`/product/${product?.slug?.current}`}
-                  onClick={() => {
-                    setShowResults(false);
-                    setSearch("");
-                  }}
-                  className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 hover:bg-accent/50"
-                >
-                  {product.variants?.[0]?.images?.[0]?.asset && (
-                    <div className="w-12 h-12 bg-accent rounded overflow-hidden">
-                      <Image
-                        width={48}
-                        height={48}
-                        src={urlFor(product.variants[0].images[0].asset).url()}
-                        alt={product.name ?? "product"}
-                        className="object-cover aspect-[4/5] w-full h-full"
-                      />
+      {/* --- RESULTS DROPDOWN (Luxury Style) --- */}
+      <AnimatePresence>
+        {showResults && (search || loading) && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="absolute top-full mt-2 right-0 w-[300px] lg:w-[350px] bg-white border border-ambrins_gold/20 shadow-xl z-50 overflow-hidden"
+          >
+            {loading ? (
+              <div className="flex items-center justify-center py-8 gap-3 text-ambrins_gold">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span className="font-body text-sm tracking-wide">Curating results...</span>
+              </div>
+            ) : products?.length > 0 ? (
+              <div className="divide-y divide-gray-50">
+                {products.map((product) => (
+                  <Link
+                    key={product?._id}
+                    href={`/product/${product?.slug?.current}`}
+                    onClick={() => {
+                      setShowResults(false);
+                      setShowSearch(false);
+                      setSearch("");
+                    }}
+                    className="flex items-start gap-4 p-4 hover:bg-ambrins_linen transition-colors group"
+                  >
+                    {/* Product Image (4:5 Ratio) */}
+                    <div className="w-12 shrink-0 overflow-hidden bg-gray-100">
+                      {product.variants?.[0]?.images?.[0]?.asset ? (
+                        <Image
+                          width={48}
+                          height={60}
+                          src={urlFor(product.variants[0].images[0].asset).url()}
+                          alt={product.name ?? "fabric"}
+                          className="object-cover w-full aspect-[4/5] group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center text-xs text-gray-400">
+                            Img
+                        </div>
+                      )}
                     </div>
-                  )}
 
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-800 line-clamp-1">
-                      {product.name}
-                    </h3>
-                    {product.price && (
-                      <p className="text-sm font-semibold text-tech_orange mt-0.5">
-                        LKR {product.price}
-                      </p>
-                    )}
-                  </div>
+                    {/* Text Details */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-body text-sm font-medium text-ambrins_black truncate group-hover:text-ambrins_gold transition-colors">
+                        {product.name}
+                      </h3>
+                 
+                      {product.price && (
+                        <p className="font-body text-xs font-semibold text-ambrins_gold mt-2">
+                          LKR {product.price.toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+                
+                {/* View All Link */}
+                <Link href="/shop" className="block p-3 text-center text-xs font-medium uppercase tracking-widest text-ambrins_black hover:text-ambrins_gold hover:bg-gray-50 transition-colors">
+                    View All Results
                 </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="px-4 py-3">
-              {search && (
-                <p className="text-sm font-medium text-gray-700">
-                  No results for "<span className="text-primary">{search}</span>
-                  "
+              </div>
+            ) : (
+              <div className="p-6 text-center">
+                <p className="font-body text-sm text-gray-500">
+                  No fabrics found for "<span className="text-ambrins_black font-medium">{search}</span>"
                 </p>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

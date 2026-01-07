@@ -9,6 +9,7 @@ import { bannerType } from "./bannerType";
 import subscribersType from "./subscribersType";
 import { giftVoucherType } from "./giftVoucher";
 import { voucherTemplateType } from "./voucherTemplate";
+import { collectionType } from "./collectionType";
 
 import { pageType } from "./page";
 
@@ -28,6 +29,7 @@ orderItemType,
     giftVoucherType,
     voucherTemplateType,
     settingsType,
+    collectionType,
 
   ],
 };

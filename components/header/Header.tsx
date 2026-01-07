@@ -1,74 +1,89 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import LogoBlack from "../LogoBlack";
-import MobileMenu from "./MobileMenu";
-import SearchBar from "./SearchBar";
-import CartMenu from "../CartMenu";
 
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import LogoBlack from "../LogoBlack"; 
+import MobileMenu from "./MobileMenu";
+import CartMenu from "../CartMenu";
+import SearchBar from "./SearchBar"; 
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 0);
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const announcementHeight = 48;
+  // Color Logic
+  const textColorClass = isScrolled ? "text-ambrins_black" : "text-white";
+  const hoverColorClass = isScrolled ? "hover:text-ambrins_gold" : "hover:text-white/80";
+  const iconColor = isScrolled ? "black" : "white";
 
   return (
-    <header className="fixed top-0 left-0 z-50 w-full">
-      {/* --- Announcement Bar --- */}
-      <div
-        className={`hidden bg-tech_primary text-white text-xs sm:text-sm px-4 sm:px-6 sm:flex flex-wrap items-center justify-center gap-4 sm:gap-10 transition-all duration-300`}
-        style={{
-          height: isScrolled ? 0 : announcementHeight,
-          overflow: "hidden",
-          transform: isScrolled ? "translateY(-100%)" : "translateY(0)",
-        }}
-      >
-        <span className="uppercase whitespace-nowrap">Island-wide delivery</span>
-        <div className="hidden sm:block w-px h-5 bg-white/70"></div>
-        <span className="uppercase whitespace-nowrap">Secure Payments</span>
-        <div className="hidden sm:block w-px h-5 bg-white/70"></div>
-        <span className="uppercase whitespace-nowrap">Cash on Delivery</span>
-      </div>
-
-      {/* --- Main Header --- */}
-      <div
-        className={`transition-colors duration-300 backdrop-blur-md ${
-          isScrolled ? "bg-tech_bg_color/95 shadow-md" : "bg-transparent"
-        }`}
-      >
-        <div className="relative flex items-center justify-between py-3 px-4 sm:px-8 md:px-12">
-          {/* Left: Mobile Menu */}
-          <div className="flex items-center text-tech_primary">
-            <MobileMenu color={isScrolled ? "black" : "black"} />
+    <header
+      className={`fixed top-0 left-0 z-50 w-full transition-all duration-500 ease-in-out ${
+        isScrolled
+          ? "bg-ambrins_linen/95 backdrop-blur-md shadow-sm py-3"
+          : "bg-gradient-to-b from-black/50 to-transparent py-4 md:py-6"
+      }`}
+    >
+      {/* Responsive Padding: 
+        px-4 on Mobile (more space for content)
+        px-12 on Desktop (luxury spacing)
+      */}
+      <div className="flex items-center justify-between px-4 sm:px-6 md:px-12 max-w-[1920px] mx-auto relative">
+        
+        {/* --- LEFT: Mobile Menu / Desktop Nav --- */}
+        <div className="flex-1 flex items-center justify-start">
+          {/* Mobile Menu Trigger */}
+          <div className={`md:hidden ${textColorClass}`}>
+            <MobileMenu color={iconColor} />
           </div>
 
-          {/* Center: Logo */}
-          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 scale-90 sm:scale-100">
-            <LogoBlack />
-          </div>
+          {/* Desktop Navigation */}
+          <nav className={`hidden md:flex items-center gap-8 font-body text-xs md:text-sm tracking-widest uppercase font-medium ${textColorClass}`}>
+            <Link href="/shop" className={`transition-colors duration-300 ${hoverColorClass}`}>
+              Shop
+            </Link>
+            <Link href="/collections" className={`transition-colors duration-300 ${hoverColorClass}`}>
+              Collections
+            </Link>
+            <Link href="/elda" className={`transition-colors duration-300 ${hoverColorClass}`}>
+              Elda.lk
+            </Link>
+          </nav>
+        </div>
 
-          {/* Right: Search + Cart */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className="hidden md:block text-black">
-              <SearchBar color="black" />
-            </div>
-            <div className="text-black">
-              <CartMenu color="black" />
-            </div>
+        {/* --- CENTER: Logo --- */}
+        {/* Absolute positioning ensures it stays centered relative to the SCREEN, 
+           not just the flex content.
+        */}
+        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+          <div className={`transition-transform duration-500 ${isScrolled ? "scale-75 md:scale-90" : "scale-90 md:scale-100"}`}>
+             <div className={`transition-all duration-500 ${!isScrolled ? "invert brightness-0" : ""}`}>
+                <LogoBlack />
+             </div>
           </div>
         </div>
 
-        {/* --- Mobile Search --- */}
-        <div className="block md:hidden px-4 pb-2">
-          <SearchBar color="black" />
+        {/* --- RIGHT: Icons (Search & Cart) --- */}
+        <div className={`flex-1 flex items-center justify-end gap-2 md:gap-4 ${textColorClass}`}>
+            
+            {/* Desktop Search */}
+            <div className={`hidden md:block`}>
+               <SearchBar color={iconColor} />
+            </div>
+
+            {/* Cart */}
+            <div className={`transition-colors duration-300 ${hoverColorClass}`}>
+               <CartMenu color={iconColor} />
+            </div>
         </div>
       </div>
-  
     </header>
   );
 };

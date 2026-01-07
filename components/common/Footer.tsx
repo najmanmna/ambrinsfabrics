@@ -1,164 +1,160 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import Link from "next/link";
-// Import FaTiktok
-import { FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa";
-import { Mail } from "lucide-react"; // Imported Mail icon for the button
+import { FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
+import { Send } from "lucide-react";
 
-// Import your logo
-import eldaLogo from "../../images/eldawhite.png"; 
-
-// Data for the links
-const quickLinks = [
-  { href: "/", title: "Home" },
-  { href: "/about", title: "About Us" },
-  // Removed "Contact Us" from here to save space
-  { href: "/care-guide", title: "Care Guide" },
-  { href: "/terms-and-conditions", title: "Terms & Conditions" },
-  { href: "/refund-policy", title: "Exchange & Return Policy" },
-  { href: "/privacy-policy", title: "Privacy Policy" },
-];
-
+// Define Links
 const shopLinks = [
-  { href: "/category/fabrics", title: "Fabrics" },
-  { href: "/category/clothing", title: "Clothing" },
-  { href: "/category/home-and-bedding", title: "Home & Bedding" },
-  { href: "/category/accessories", title: "Accessories" },
+  { href: "/shop", title: "All Fabrics" },
+  { href: "/collections", title: "Collections" },
+  { href: "/new-arrivals", title: "New Arrivals" },
+  { href: "/elda", title: "Elda Artisan" },
 ];
+
+const companyLinks = [
+  { href: "/about", title: "Our Story" },
+  { href: "/visit", title: "Visit Studio" },
+  { href: "/contact", title: "Contact Us" },
+];
+
+const legalLinks = [
+  { href: "/terms", title: "Terms & Conditions" },
+  { href: "/privacy", title: "Privacy Policy" },
+  { href: "/returns", title: "Returns & Exchanges" },
+];
+
+// --- SVG: Decorative Footer Mandala ---
+const FooterMandala = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 100 100" fill="currentColor" className={className}>
+    <path d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 90c-22.1 0-40-17.9-40-40s17.9-40 40-40 40 17.9 40 40-17.9 40-40 40zm0-75c-19.3 0-35 15.7-35 35s15.7 35 35 35 35-15.7 35-35-15.7-35-35-35zm0 60c-13.8 0-25-11.2-25-25s11.2-25 25-25 25 11.2 25 25-11.2 25-25 25z" />
+    <circle cx="50" cy="50" r="15" opacity="0.5" />
+    <path d="M50 20L55 35L70 40L55 45L50 60L45 45L30 40L45 35L50 20Z" />
+  </svg>
+);
 
 const Footer = () => {
   return (
-    // THEME: Use brand colors
-    <footer className="bg-tech_primary text-[#FDFBF6] border-t border-[#46627f]">
-      <div className="mx-auto max-w-6xl px-4 sm:px-4 ">
-        {/* Main Footer Content Grid */}
-        <div className="py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+    <footer className="bg-ambrins_dark text-white border-t border-white/5 font-body relative overflow-hidden">
+      
+      {/* --- Background Decor (Mandala Watermark) --- */}
+      <div className="absolute -top-20 -right-20 w-96 h-96 text-white opacity-[0.03] animate-spin-slow pointer-events-none z-0">
+         <FooterMandala className="w-full h-full" />
+      </div>
 
-          {/* Column 1: Logo and Tagline */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left">
-            <Link href="/" className="mb-4">
-              <Image
-                src={eldaLogo} 
-                alt="ELDA - House of Block Prints"
-                width={180}
-                height={60} 
-                className="sm:w-2xl sm:-ml-3" 
-              />
+      <div className="mx-auto max-w-[1400px] px-6 md:px-12 pt-16 pb-8 relative z-10">
+        
+        {/* --- Top Section: Grid --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
+
+          {/* 1. Brand Identity (Span 4 cols) */}
+          <div className="lg:col-span-4 flex flex-col items-center md:items-start text-center md:text-left">
+            <Link href="/" className="mb-6 block group">
+               <h2 className="font-heading text-4xl tracking-tight text-white group-hover:text-ambrins_secondary transition-colors duration-300">
+                 AMBRINS
+               </h2>
             </Link>
-            <p className="font-playfair text-md tracking-wider text-gray-300">
-              HOUSE OF BLOCK PRINTS
+            
+            <p className="text-white/70 text-sm leading-relaxed max-w-sm mb-8 font-light">
+              Curating Colombo’s finest silks, laces, and artisan prints since 1999. We are the silent partner to your most elegant creations.
+            </p>
+
+            {/* Social Icons (Hover: Rani Pink) */}
+            <div className="flex gap-4">
+              <a href="#" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-ambrins_primary hover:border-ambrins_primary hover:text-white transition-all duration-300">
+                <FaInstagram size={18} />
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-ambrins_primary hover:border-ambrins_primary hover:text-white transition-all duration-300">
+                <FaFacebookF size={18} />
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-ambrins_primary hover:border-ambrins_primary hover:text-white transition-all duration-300">
+                <FaWhatsapp size={18} />
+              </a>
+            </div>
+          </div>
+
+          {/* 2. Shop Links (Span 2 cols) */}
+          <div className="lg:col-span-2 text-center md:text-left">
+            <h3 className="font-heading text-lg text-ambrins_secondary mb-6 tracking-wide">Explore</h3>
+            <ul className="space-y-3">
+              {shopLinks.map((link) => (
+                <li key={link.title}>
+                  <Link href={link.href} className="text-sm text-white/60 hover:text-ambrins_primary transition-colors duration-300">
+                    {link.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* 3. Company Links (Span 2 cols) */}
+          <div className="lg:col-span-2 text-center md:text-left">
+            <h3 className="font-heading text-lg text-ambrins_secondary mb-6 tracking-wide">Company</h3>
+            <ul className="space-y-3">
+              {companyLinks.map((link) => (
+                <li key={link.title}>
+                  <Link href={link.href} className="text-sm text-white/60 hover:text-ambrins_primary transition-colors duration-300">
+                    {link.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* 4. Newsletter (Span 4 cols) */}
+          <div className="lg:col-span-4 text-center md:text-left">
+            <h3 className="font-heading text-lg text-ambrins_secondary mb-6 tracking-wide">The List</h3>
+            <p className="text-white/60 text-sm mb-6">
+              Join our exclusive list for early access to new collections and private studio events.
+            </p>
+            
+            <form className="flex flex-col gap-3">
+              <div className="relative">
+                  <input 
+                    type="email" 
+                    placeholder="Your email address" 
+                    className="bg-white/5 border border-white/10 text-white px-5 py-4 w-full focus:outline-none focus:border-ambrins_primary focus:ring-1 focus:ring-ambrins_primary text-sm placeholder:text-white/30 rounded-sm transition-all"
+                  />
+                  <button 
+                    type="button" 
+                    className="absolute right-2 top-2 bottom-2 bg-ambrins_primary text-white px-4 rounded-sm hover:bg-white hover:text-ambrins_dark transition-colors duration-300 flex items-center justify-center"
+                  >
+                    <Send size={16} />
+                  </button>
+              </div>
+              <span className="text-[10px] text-white/30">By subscribing, you agree to our Privacy Policy.</span>
+            </form>
+          </div>
+
+        </div>
+
+        {/* --- Bottom Section: Copyright & Legal --- */}
+        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/40">
+          
+          <div className="flex flex-wrap justify-center gap-6">
+            {legalLinks.map((link) => (
+               <Link key={link.title} href={link.href} className="hover:text-ambrins_secondary transition-colors">
+                  {link.title}
+               </Link>
+            ))}
+          </div>
+
+          <div className="text-center md:text-right">
+            <p className="mb-1">© {new Date().getFullYear()} Ambrins Fabrics. All rights reserved.</p>
+            <p>
+              Designed & Developed by{" "}
+              <a
+                href="https://ahamedwebstudio.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/60 hover:text-ambrins_secondary transition-colors font-medium border-b border-white/20 hover:border-ambrins_secondary pb-0.5"
+              >
+                Ahamed Web Studio
+              </a>
             </p>
           </div>
 
-          {/* Column 2: Quick Links */}
-          <div className="text-center md:text-left">
-            <h3 className="text-lg font-semibold mb-5 text-[#A67B5B] uppercase tracking-wider">
-              Quick Links
-            </h3>
-            <ul className="space-y-3 text-gray-300">
-              {quickLinks.map((link) => (
-                <li key={link.title}>
-                  <Link
-                    href={link.href}
-                    className="hover:text-[#A67B5B] transition-colors"
-                  >
-                    {link.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 3: Shop */}
-          <div className="text-center md:text-left">
-            <h3 className="text-lg font-semibold mb-5 text-[#A67B5B] uppercase tracking-wider">
-              Shop
-            </h3>
-            <ul className="space-y-3 text-gray-300">
-              {shopLinks.map((link) => (
-                <li key={link.title}>
-                  <Link
-                    href={link.href}
-                    className="hover:text-[#A67B5B] transition-colors"
-                  >
-                    {link.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 4: Follow Us & Contact */}
-          <div className="text-center md:text-left flex flex-col items-center md:items-start">
-            <h3 className="text-lg font-semibold mb-5 text-[#A67B5B] uppercase tracking-wider">
-              Follow Us
-            </h3>
-            
-            {/* Social Icons */}
-            <div className="flex justify-center md:justify-start space-x-4 mb-8">
-              <a
-                href="https://www.facebook.com/eldaclothinglk"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-                className="p-3 border border-gray-600 rounded-md text-gray-300 hover:border-[#A67B5B] hover:text-[#A67B5B] transition-colors"
-              >
-                <FaFacebookF size={20} />
-              </a>
-              <a
-                href="https://www.instagram.com/elda_houseofblockprints?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="p-3 border border-gray-600 rounded-md text-gray-300 hover:border-[#A67B5B] hover:text-[#A67B5B] transition-colors"
-              >
-                <FaInstagram size={20} />
-              </a>
-              <a
-                href="https://www.tiktok.com/@eldalk?is_from_webapp=1&sender_device=pc"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="TikTok"
-                className="p-3 border border-gray-600 rounded-md text-gray-300 hover:border-[#A67B5B] hover:text-[#A67B5B] transition-colors"
-              >
-                <FaTiktok size={20} />
-              </a>
-            </div>
-
-            {/* NEW: Contact Us Button */}
-            <h3 className="text-lg font-semibold mb-3 text-[#A67B5B] uppercase tracking-wider">
-              Get in Touch
-            </h3>
-            <Link
-              href="/contact"
-              className="group flex items-center gap-2 px-6 py-2 border border-[#A67B5B] rounded-md text-[#A67B5B] hover:bg-[#A67B5B] hover:text-white transition-all duration-300"
-            >
-              <Mail size={18} />
-              <span>Contact Us</span>
-            </Link>
-
-          </div>
-        </div>
-
-        {/* Bottom Bar: Copyright & Credit */}
-        <div className="py-6 border-t border-gray-700 text-center text-sm text-gray-400">
-          <p>
-            © {new Date().getFullYear()}{" "}
-            <span className="font-semibold text-white">ELDA</span>. All rights reserved.
-          </p>
-          <p className="mt-1 text-xs">
-            Designed & Developed by{" "}
-            <a
-              href="https://ahamedwebstudio.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-white hover:text-[#A67B5B] transition-colors"
-            >
-              Ahamed Web Studio
-            </a>
-          </p>
         </div>
       </div>
     </footer>

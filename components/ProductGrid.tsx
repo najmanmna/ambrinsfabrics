@@ -68,18 +68,10 @@ const ProductGrid = () => {
   return (
     <div className="relative py-15">
       <div className="absolute  sm:-top-2 w-2xl sm:w-full overflow-hidden">
-        <img
-          src={sectionBreak.src}
-          alt="Section divider flipped"
-          className="w-full h-auto object-cover rotate-180"
-        />
+       
       </div>
       <div className="absolute bottom-8 sm:bottom-2 w-2xl sm:w-full overflow-hidden">
-        <img
-          src={sectionBreak.src}
-          alt="Section divider flipped"
-          className="w-full h-auto object-cover rotate-180"
-        />
+       
       </div>
       <div
         className="flex flex-col lg:px-20 py-24 rounded-xl"

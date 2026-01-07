@@ -1,120 +1,86 @@
-"use client";
-import React, { useRef, useState } from "react";
-import Container from "./Container";
-import bgPattern from "@/images/heri2.png";
-import borderTile from "@/images/line-motif.png";
-import { Volume2, VolumeX } from "lucide-react"; // sound icons
-import sectionBreak from "@/images/sectionBreak.png";
+import React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { MapPin, ArrowRight } from "lucide-react";
+
+// REPLACE THIS with your actual shop photo
+import SHOP_IMAGE from "@/images/visitstudio.png";
+
+// --- SVG: Mandala Watermark ---
+const MandalaWatermark = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 100 100" fill="currentColor" className={className}>
+     <path d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 90c-22.1 0-40-17.9-40-40s17.9-40 40-40 40 17.9 40 40-17.9 40-40 40zm0-75c-19.3 0-35 15.7-35 35s15.7 35 35 35 35-15.7 35-35-15.7-35-35-35zm0 60c-13.8 0-25-11.2-25-25s11.2-25 25-25 25 11.2 25 25-11.2 25-25 25z" />
+  </svg>
+);
 
 const VisitStudio = () => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isMuted, setIsMuted] = useState(true);
-
-  const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
-
   return (
-    <section
-    id="studio"
-      className="relative bg-white py-20 "
-      style={{
-        backgroundImage: `url(${bgPattern.src})`,
-        backgroundRepeat: "repeat",
-        backgroundSize: "contain",
-      }}
-    >
+    <section className="relative w-full h-[600px] md:h-[800px] overflow-hidden bg-ambrins_dark">
       
-      <div className="absolute -bottom-8 w-2xl sm:w-full  z-40 ">
-        <img
-          src={sectionBreak.src}
-          alt="Section divider flipped"
-          className="w-full h-auto object-cover rotate-180"
+      {/* --- Background: Image with Warm Overlay --- */}
+      <div className="absolute inset-0 w-full h-full z-0">
+        <Image 
+          src={SHOP_IMAGE} 
+          alt="Ambrins Fabrics Flagship Store" 
+          fill
+          className="object-cover"
+          placeholder="blur"
         />
+        {/* Warm Gradient Overlay for the "Indian Luxury" feel */}
+        <div className="absolute inset-0 bg-gradient-to-t from-ambrins_dark/90 via-ambrins_dark/40 to-transparent mix-blend-multiply" />
       </div>
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-white/85"></div>
 
-      <Container className="relative z-10 mx-auto max-w-5xl">
-        {/* Heading */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-playfair font-semibold text-tech_primary">
-            VISIT OUR STUDIO
-          </h2>
+      {/* --- Overlay Content: The "Invitation Card" --- */}
+      <div className="absolute inset-0 flex items-center justify-center p-4 z-10">
+        <div className="relative bg-ambrins_light max-w-2xl w-full text-center shadow-2xl p-2 md:p-3 rounded-sm">
+            
+            {/* Inner Border (The 'Card' look) */}
+            <div className="border border-ambrins_dark/20 p-8 md:p-12 relative overflow-hidden">
+                
+                {/* Mandala Watermark (Decorative) */}
+                <div className="absolute -top-10 -right-10 text-ambrins_secondary/10 w-40 h-40 animate-spin-slow">
+                    <MandalaWatermark className="w-full h-full" />
+                </div>
+                <div className="absolute -bottom-10 -left-10 text-ambrins_secondary/10 w-40 h-40 animate-spin-slow">
+                    <MandalaWatermark className="w-full h-full" />
+                </div>
+
+                {/* Content */}
+                <div className="relative z-10">
+                    <div className="flex justify-center mb-4">
+                        <MapPin className="w-6 h-6 text-ambrins_primary animate-bounce" />
+                    </div>
+
+                    <span className="block font-body text-xs font-bold tracking-[0.2em] text-ambrins_secondary uppercase mb-4">
+                        — You are Invited
+                    </span>
+
+                    <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl text-ambrins_dark mb-6 leading-tight">
+                        Experience Texture <br /> <span className="italic text-ambrins_primary">in Person.</span>
+                    </h2>
+
+                    <p className="font-body text-ambrins_text/80 text-sm md:text-base leading-relaxed mb-10 max-w-lg mx-auto">
+                        Visit our flagship studio in the heart of Colombo&apos;s textile hub. Touch the silks, see the true colors under natural light, and consult with our master curators.
+                    </p>
+
+                    <Link
+                        href="/contact"
+                        className="group inline-flex items-center gap-3 bg-ambrins_primary text-white font-body text-xs font-bold tracking-[0.2em] uppercase px-10 py-4 rounded-full shadow-lg hover:bg-ambrins_dark hover:shadow-xl transition-all duration-300"
+                    >
+                        Plan Your Visit
+                        <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </Link>
+                </div>
+
+                {/* Ornate Corner Accents (CSS Borders) */}
+                <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-ambrins_secondary"></div>
+                <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-ambrins_secondary"></div>
+                <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-ambrins_secondary"></div>
+                <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-ambrins_secondary"></div>
+            </div>
         </div>
+      </div>
 
-        <div className="flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-16">
-          {/* Left: looping reel video with border */}
-          <div
-            className=" p-[10px] relative"
-            style={{
-              backgroundImage: `url(${borderTile.src})`,
-              backgroundRepeat: "repeat",
-              backgroundSize: "10%",
-            }}
-          >
-            <div className="relative">
-              <video
-                ref={videoRef}
-                src="/videos/visitreel.mp4"
-                autoPlay
-                loop
-                muted={isMuted}
-                playsInline
-                className="w-full h-[500px] sm:h-[550px] object-cover rounded-sm"
-              />
-
-              {/* Mute/Unmute button */}
-              <button
-                onClick={toggleMute}
-                className="absolute bottom-3 right-3 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full transition"
-              >
-                {isMuted ? (
-                  <VolumeX size={18} className="text-white" />
-                ) : (
-                  <Volume2 size={18} className="text-white" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Right: text and map */}
-          <div className="lg:w-1/2 w-full text-center lg:text-left flex flex-col items-center lg:items-start">
-            <p className="text-gray-800 text-lg sm:text-xl max-w-md leading-relaxed">
-              Experience <b>ELDA Fabrics</b> in person. Touch, feel, and explore
-              our curated collection at our Colombo studio.
-            </p>
-
-            <div className="mt-8">
-              <h3 className="text-xl sm:text-2xl font-playfair font-semibold text-tech_primary mb-2">
-                Visit Us At
-              </h3>
-              <p className="text-gray-700 text-base sm:text-lg">
-                Orchard Building (3rd Floor),
-                <br />
-                7 3/2 B Galle Road, Opposite Savoy Cinema, Colombo 06.
-              </p>
-              <p className="text-gray-700 text-base sm:text-lg mt-2">
-                📞 011 255 3633 | 077 721 2229
-              </p>
-            </div>
-
-            {/* Google Map */}
-            <div className="mt-6 w-full max-w-md h-80 rounded-sm shadow-md overflow-hidden">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3961.0956908083413!2d79.85754150834478!3d6.879138493091015!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae25bb8e9f761db%3A0xc7fc450b2350a963!2sElda%20-%20House%20of%20Block%20Prints!5e0!3m2!1sen!2slk!4v1760169870898!5m2!1sen!2slk"
-                className="w-full h-full border-0"
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
-            </div>
-          </div>
-        </div>
-      </Container>
     </section>
   );
 };

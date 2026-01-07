@@ -1,4 +1,5 @@
-// src/components/ProductCard.tsx
+"use client";
+
 import { ALL_PRODUCTS_QUERYResult } from "@/sanity.types";
 import React, { useState } from "react";
 import PriceView from "./PriceView";
@@ -7,16 +8,14 @@ import Title from "./Title";
 import { image } from "@/sanity/image";
 import { TagIcon } from "@heroicons/react/24/outline";
 import Image, { ImageLoaderProps } from "next/image";
-import cardBg from "../public/texture.png";
 
-type ProductWithVariants = ALL_PRODUCTS_QUERYResult[number];
-
-// --- SANITY IMAGE LOADER ---
 const sanityLoader = ({ src, width, quality }: ImageLoaderProps) => {
   const hasParams = src.includes("?");
   const separator = hasParams ? "&" : "?";
-  return `${src}${separator}w=${width}&q=${quality || 80}&auto=format&fit=max`;
+  return `${src}${separator}w=${width}&h=${Math.floor(width * 1.33)}&q=${quality || 80}&fit=crop`;
 };
+
+type ProductWithVariants = ALL_PRODUCTS_QUERYResult[number];
 
 const ProductCard = ({
   product,
@@ -25,11 +24,28 @@ const ProductCard = ({
   product: ProductWithVariants;
   priority?: boolean;
 }) => {
+  const [hovered, setHovered] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
+
+  // --- DEBUGGING: Check if slug exists ---
+  const slug = product?.slug?.current;
+  if (!slug) {
+    console.warn("Product missing slug:", product?.name);
+  }
+
+  // 1. Extract Images
   const variantImages =
     product?.variants
       ?.map((v) => v?.images?.[0])
       .filter((img): img is NonNullable<typeof img> => Boolean(img)) || [];
 
+  const primaryImage = variantImages[0];
+  const secondaryImage = variantImages[1];
+
+  const primaryImageUrl = primaryImage ? image(primaryImage).url() : null;
+  const secondaryImageUrl = secondaryImage ? image(secondaryImage).url() : null;
+
+  // 2. Calculate Stock
   const totalStock =
     product?.variants?.reduce((acc, v) => {
       if (!v) return acc;
@@ -40,143 +56,137 @@ const ProductCard = ({
       return acc + Math.max(stock, 0);
     }, 0) || 0;
 
-  // State for hover effect
-  const [hovered, setHovered] = useState(false);
-  // ✨ NEW: State for loading skeleton
-  const [isImageLoading, setIsImageLoading] = useState(true);
-
-  const primaryImage = variantImages[0];
-  const secondaryImage = variantImages[1];
-
-  const primaryImageUrl = primaryImage ? image(primaryImage).url() : null;
-  const secondaryImageUrl = secondaryImage ? image(secondaryImage).url() : null;
+  const isOutOfStock = totalStock === 0;
 
   return (
     <div
-      className="group relative overflow-hidden text-sm shadow-[2px_4px_8px_rgba(0,0,0,0.08),-2px_3px_6px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.12),0_6px_12px_rgba(0,0,0,0.08)] transition-shadow duration-300 bg-tech_white"
+      className="group relative flex flex-col bg-white transition-all duration-300 border border-transparent hover:border-ambrins_secondary/30 hover:shadow-xl hover:shadow-ambrins_secondary/5 rounded-sm overflow-hidden"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* --- BACKGROUND TEXTURE --- */}
-      <Image
-        src={cardBg}
-        alt=""
-        fill
-        sizes="(max-width: 640px) 100vw, 400px"
-        quality={50}
-        placeholder="blur"
-        className="object-cover object-center z-0 pointer-events-none"
-        style={{ backgroundBlendMode: "multiply" }}
-        aria-hidden="true"
-      />
-
-      <div className="relative z-10 py-2 sm:py-4 px-2 sm:px-4 flex flex-col min-h-[375px] sm:min-h-[400px]">
-        {/* Discount Badge */}
-        {product.discount && (
-          <div className="absolute top-2 left-2 bg-tech_gold text-white text-xs font-bold px-2 py-0.5 rounded z-20">
+      <div className="relative z-10 flex flex-col h-full">
+        
+        {/* --- DISCOUNT BADGE (Rani Pink) --- */}
+        {product.discount && product.discount > 0 && !isOutOfStock && (
+          <div className="absolute top-2 left-2 bg-ambrins_primary text-white text-[10px] font-body font-bold uppercase tracking-widest px-2 py-1 z-30 rounded-sm shadow-sm">
             -{product.discount}%
           </div>
         )}
 
-        {/* Stock Overlay */}
-        {totalStock === 0 && (
-          <div className="absolute inset-0 bg-black/20 flex items-center justify-center text-white font-bold text-lg z-30 pointer-events-none">
-            OUT OF STOCK
-          </div>
-        )}
-
-        {/* Product Image Container */}
-        {/* ✨ MODIFIED: Added conditional classes for skeleton loader */}
-        <div 
-          className={`relative w-full border-2 border-tech_gold overflow-hidden rounded-lg flex items-center justify-center z-10 aspect-[620/750] transition-colors duration-300
-          ${isImageLoading ? 'bg-gray-200 animate-pulse' : 'bg-tech_white'}`}
-        >
+        {/* --- IMAGE CONTAINER --- */}
+        {/* FIX: Only render Link if slug exists to prevent loading errors */}
+        {slug ? (
           <Link
-            href={`/product/${product?.slug?.current || ""}`}
-            className="w-full h-full relative"
+            href={`/product/${slug}`}
+            className="relative w-full aspect-[3/4] overflow-hidden bg-ambrins_light block"
           >
+            {/* Out of Stock Overlay */}
+            {isOutOfStock && (
+              <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] flex items-center justify-center z-30 transition-opacity duration-500 group-hover:bg-white/80">
+                <span className="text-ambrins_dark font-body text-xs font-bold tracking-[0.25em] uppercase border-b border-ambrins_dark pb-1">
+                  Sold Out
+                </span>
+              </div>
+            )}
+
             {primaryImageUrl ? (
               <>
-                {/* ✨ MODIFIED: Added onLoadingComplete and dynamic opacity */}
+                {/* Primary Image */}
                 <Image
                   loader={sanityLoader}
                   src={primaryImageUrl}
-                  alt={product?.name || "Product Image"}
+                  alt={product?.name || "Ambrins Fabric"}
                   fill
-                  sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 300px"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   priority={priority}
-                  // When loading is done, set state to false
-                  onLoadingComplete={() => setIsImageLoading(false)}
-                  // Start with opacity-0, fade to opacity-100 when loading finishes
-                  className={`object-cover transition-opacity duration-500 ${
-                     isImageLoading ? 'opacity-0' : 'opacity-100'
+                  onLoad={() => setIsImageLoading(false)}
+                  className={`object-cover object-center transition-all duration-700 ease-in-out ${
+                    isImageLoading ? "opacity-0 scale-105" : "opacity-100 scale-100"
                   }`}
                 />
 
-                {/* Secondary Hover Image (Kept as is) */}
-                {hovered && secondaryImageUrl && (
+                {/* Secondary Hover Image */}
+                {secondaryImageUrl && (
                   <Image
                     loader={sanityLoader}
                     src={secondaryImageUrl}
                     alt=""
                     fill
-                    sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 300px"
-                    className="absolute top-0 left-0 w-full h-full object-cover animate-fadeIn z-20"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className={`object-cover object-center absolute inset-0 z-10 transition-opacity duration-700 ease-in-out ${
+                      hovered ? "opacity-100" : "opacity-0"
+                    }`}
                   />
                 )}
               </>
             ) : (
-              // Fallback for missing image
-              <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                <TagIcon className="w-16 h-16 text-gray-300" />
+              // Fallback for no image
+              <div className="w-full h-full flex items-center justify-center text-ambrins_secondary/30">
+                <TagIcon className="w-10 h-10" strokeWidth={1} />
               </div>
             )}
           </Link>
-        </div>
+        ) : (
+            // Fallback if NO SLUG (Prevents broken links)
+            <div className="relative w-full aspect-[3/4] bg-gray-100 flex items-center justify-center text-xs text-red-500 font-bold">
+                Error: No Slug
+            </div>
+        )}
 
-        {/* Product Details */}
-        <div className="p-4 flex flex-col items-center gap-2 flex-1 text-center relative">
-          <Title className="text-xl sm:text-xl font-cormorant line-clamp-2">
-            {product?.name}
-          </Title>
+        {/* --- DETAILS SECTION --- */}
+        <div className="pt-4 pb-4 px-3 flex flex-col items-center text-center gap-1 flex-grow">
+          
+          {/* Category Label (Marigold) */}
+          <span className="text-[10px] font-bold text-ambrins_secondary uppercase tracking-widest">
+             {product?.category?.name || "Textile"}
+          </span>
 
-          <div className="flex gap-1 justify-center mt-1 flex-wrap">
-            {product.category && (
-              <span className="bg-tech_primary text-white text-xs px-2 py-0.5 rounded">
-                {product.category.name}
-              </span>
-            )}
-            {product.subcategory && (
-              <span className="bg-tech_gold text-white text-xs px-2 py-0.5 rounded">
-                {product.subcategory.name}
-              </span>
-            )}
-          </div>
+          {/* Title */}
+          {slug ? (
+            <Link href={`/product/${slug}`}>
+                <Title className="font-heading text-lg text-ambrins_dark leading-tight line-clamp-2 group-hover:text-ambrins_primary transition-colors duration-300">
+                {product?.name}
+                </Title>
+            </Link>
+          ) : (
+            <Title className="font-heading text-lg text-gray-400 leading-tight line-clamp-2">
+                {product?.name}
+            </Title>
+          )}
 
-          <div className="mt-2 relative w-full h-10 flex items-center justify-center">
+
+          {/* Price / Action Slider Area */}
+          <div className="relative h-9 w-full overflow-hidden mt-2">
+            
+            {/* 1. Price View (Default State) */}
             <div
-              className={`transition-opacity duration-300 ${
-                hovered && totalStock > 0 ? "opacity-0" : "opacity-100"
+              className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ease-in-out transform ${
+                hovered && !isOutOfStock
+                  ? "-translate-y-full opacity-0"
+                  : "translate-y-0 opacity-100"
               }`}
             >
               <PriceView
                 price={product?.price}
                 discount={product.discount}
-                className="text-sm sm:text-lg"
-                unitLabel={
-                  product?.category?.name?.toLowerCase() === "fabrics"
-                    ? "/meter"
-                    : undefined
-                }
+                className="text-base font-body font-medium text-ambrins_dark"
+                // FIX: Force "/ meter" as requested
+                unitLabel="/ meter"
               />
             </div>
 
-            {hovered && totalStock > 0 && (
+            {/* 2. Shop Button (Hover State - Rani Pink) */}
+            {!isOutOfStock && slug && (
               <Link
-                href={`/product/${product?.slug?.current || ""}`}
-                className="absolute inset-0 bg-tech_primary text-white px-4 py-2 rounded flex items-center justify-center font-semibold animate-fadeIn"
+                // href={`/product/${slug}`}
+                href={`/`}
+                className={`absolute inset-0 flex items-center justify-center bg-ambrins_primary text-white font-body text-[10px] font-bold tracking-[0.2em] uppercase rounded-sm transition-all duration-500 ease-in-out transform hover:bg-ambrins_dark ${
+                  hovered
+                    ? "translate-y-0 opacity-100"
+                    : "translate-y-full opacity-0"
+                }`}
               >
-                SHOP NOW
+                View Details
               </Link>
             )}
           </div>

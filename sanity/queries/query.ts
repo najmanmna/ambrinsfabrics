@@ -36,6 +36,8 @@ export const FEATURED_CATEGORY_QUERY = defineQuery(`
 `);
 
 // 🔹 All Products (with variants, category, subcategory)
+
+
 export const ALL_PRODUCTS_QUERY = defineQuery(`
   *[_type == "product"] | order(name asc){
     _id,
@@ -44,27 +46,22 @@ export const ALL_PRODUCTS_QUERY = defineQuery(`
     price,
     discount,
     isFeatured,
-    "category": category->{
-      _id,
-      name,
-      slug
-    },
-    "subcategory": subcategory->{
-      _id,
-      name,
-      slug
-    },
+    "category": category->{ _id, name, slug },
+    "subcategory": subcategory->{ _id, name, slug },
+    "collections": collections[]->{ _id, title, slug },
     variants[]{
       _key,
       variantName,
       openingStock,
-      stockOut,
-      "availableStock": openingStock - coalesce(stockOut, 0),
-      images[]{asset->{url}}
+      "availableStock": openingStock, // or add your stock logic
+      
+      // 👇 CHANGE THIS LINE
+      // Old: images[]{asset->{url}}
+      // New: Fetch the full image object so the builder works
+      images[]
     }
   }
 `);
-
 // 🔹 Featured Products
 export const FEATURE_PRODUCTS = defineQuery(`
   *[_type == "product" && isFeatured == true] | order(name asc){

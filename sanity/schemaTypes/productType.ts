@@ -6,90 +6,135 @@ export const productType = defineType({
   title: "Products",
   type: "document",
   icon: TrolleyIcon,
+  groups: [
+    { name: "main", title: "Main Info" },
+    { name: "sensory", title: "Sensory Profile" },
+    { name: "inventory", title: "Stock & Variants" },
+  ],
   fields: [
+    // --- 1. CORE INFO ---
     defineField({
       name: "name",
       title: "Product Name",
       type: "string",
-      description: "E.g., 'Cotton Indigo Block Print' or 'Jaipur Kantha Quilt'",
+      group: "main",
       validation: (Rule) => Rule.required(),
     }),
-
     defineField({
       name: "slug",
       title: "Slug",
       type: "slug",
-      options: {
-        source: "name",
-        maxLength: 96,
-      },
+      group: "main",
+      options: { source: "name", maxLength: 96 },
       validation: (Rule) => Rule.required(),
     }),
 
-    // ✨ UPDATED: This dropdown will ONLY show main categories.
-   defineField({
+    // --- 2. CATEGORIZATION ---
+    // Mandatory Level 1
+    defineField({
       name: "category",
-      title: "Main Category (Level 1)",
+      title: "Main Category",
       type: "reference",
+      group: "main",
       to: [{ type: "category" }],
-      options: {
-        filter: "!defined(parent)", // Only show main categories
-      },
+      options: { filter: "!defined(parent)" }, 
       validation: (Rule) => Rule.required(),
     }),
 
-    // --- LEVEL 2 ---
+    // Optional Level 2
     defineField({
       name: "subcategory",
-      title: "Subcategory (Level 2)",
+      title: "Subcategory (Optional)",
       type: "reference",
+      group: "main",
       to: [{ type: "category" }],
+      description: "Leave empty if not needed.",
       options: {
         filter: ({ document }) => {
           const categoryId = (document?.category as { _ref: string })?._ref;
-          if (!categoryId) {
-            return { filter: "false" }; // No main category selected
-          }
-          return {
-            filter: `parent._ref == $categoryId`,
-            params: { categoryId },
-          };
+          return categoryId
+            ? { filter: `parent._ref == $categoryId`, params: { categoryId } }
+            : { filter: "false" };
         },
       },
       readOnly: ({ document }) => !document?.category,
     }),
-    
-    // --- NEW LEVEL 3 FIELD ---
-    defineField({
-      name: "specificCategory",
-      title: "Specific Category (Level 3)",
-      type: "reference",
-      to: [{ type: "category" }],
-      description: "Optional. Select the most specific type (e.g., 'Indigo Prints').",
-      options: {
-        filter: ({ document }) => {
-          const subcategoryId = (document?.subcategory as { _ref: string })?._ref;
-          if (!subcategoryId) {
-            return { filter: "false" }; // No subcategory selected
-          }
-          // Show categories whose parent is the selected subcategory
-          return {
-            filter: `parent._ref == $subcategoryId`,
-            params: { subcategoryId },
-          };
-        },
-      },
-      readOnly: ({ document }) => !document?.subcategory,
-    }),
-    // --- END NEW FIELD ---
 
-    // 🔹 Variants: Each pattern/style has its own stock and images.
+    // Flexible Marketing Collections
+    defineField({
+      name: "collections",
+      title: "Marketing Collections",
+      type: "array",
+      group: "main",
+      description: "E.g. 'Bridal Edit', 'New Arrivals'",
+      of: [{ type: "reference", to: [{ type: "collection" }] }], 
+    }),
+
+    // --- 3. PRICING ---
+    defineField({
+      name: "price",
+      title: "Price per Meter (LKR)",
+      type: "number",
+      group: "main",
+      validation: (Rule) => Rule.required().min(0),
+    }),
+    defineField({
+      name: "discount",
+      title: "Discount %",
+      type: "number",
+      group: "main",
+    }),
+
+    // --- 4. SENSORY PROFILE ---
+    defineField({
+      name: "handFeel",
+      title: "Hand-Feel",
+      type: "string",
+      group: "sensory",
+      options: {
+        list: [
+          { title: "Silky & Smooth", value: "Silky & Smooth" },
+          { title: "Crisp & Structured", value: "Crisp & Structured" },
+          { title: "Soft & Airy", value: "Soft & Airy" },
+          { title: "Textured & Grainy", value: "Textured & Grainy" },
+          { title: "Heavy & Rich", value: "Heavy & Rich" },
+        ],
+      },
+    }),
+    defineField({
+      name: "drape",
+      title: "Drape",
+      type: "string",
+      group: "sensory",
+      options: {
+        list: [
+          { title: "Fluid", value: "Fluid" },
+          { title: "Structured", value: "Structured" },
+          { title: "Voluminous", value: "Voluminous" },
+          { title: "Stiff", value: "Stiff" },
+        ],
+      },
+    }),
+    defineField({
+      name: "translucency",
+      title: "Translucency",
+      type: "string",
+      group: "sensory",
+      options: {
+        list: [
+          { title: "Opaque", value: "Opaque" },
+          { title: "Semi-Sheer", value: "Semi-Sheer" },
+          { title: "Sheer", value: "Sheer" },
+        ],
+      },
+    }),
+
+    // --- 5. VARIANTS ---
     defineField({
       name: "variants",
-      title: "Product Variants",
+      title: "Color Variants",
       type: "array",
-      description:
-        "Add at least one variant. For products without different patterns, the variant name can be the same as the product name.",
+      group: "inventory",
       of: [
         {
           type: "object",
@@ -97,115 +142,68 @@ export const productType = defineType({
           fields: [
             defineField({
               name: "variantName",
-              title: "Variant Name / Pattern",
+              title: "Color Name",
               type: "string",
-              description: "E.g., 'Maroon Leaf Pattern' or 'Blue Floral Motif'",
               validation: (Rule) => Rule.required(),
             }),
             defineField({
               name: "openingStock",
-              title: "Opening Stock",
+              title: "Stock (Meters)",
               type: "number",
               validation: (Rule) => Rule.required().min(0),
             }),
             defineField({
-              name: "stockOut",
-              title: "Stock Out",
-              type: "number",
-              initialValue: 0,
-              readOnly: false, // Should be managed by your order logic, not manually.
-            }),
-            defineField({
               name: "images",
-              title: "Images for this Variant",
+              title: "Images",
               type: "array",
-              of: [{ type: "image", options: { hotspot: true,accept: "image/jpeg, image/png, image/webp, image/heic, image/heif, .heic" } }],
+              of: [{ type: "image", options: { hotspot: true } }],
               validation: (Rule) => Rule.required().min(1),
             }),
           ],
           preview: {
             select: {
               title: "variantName",
-              opening: "openingStock",
-              out: "stockOut",
+              stock: "openingStock",
               media: "images.0.asset",
             },
-            prepare({ title, opening, out, media }) {
-              const available = (opening || 0) - (out || 0);
+            prepare({ title, stock, media }) {
               return {
                 title,
-                subtitle: `Available: ${available}`,
+                subtitle: `${stock} Meters`,
                 media,
               };
             },
           },
         },
       ],
-      validation: (Rule) => Rule.required().min(1),
     }),
 
+    // --- 6. DESCRIPTION ---
     defineField({
-      name: "price",
-      title: "Price (LKR)",
-      type: "number",
-      validation: (Rule) => Rule.required().min(0),
-    }),
-
-    defineField({
-      name: "discount",
-      title: "Discount Percentage (%)",
-      type: "number",
-      description: "This is applied on the base price. E.g., enter 10 for 10% off.",
-      validation: (Rule) => Rule.min(0),
-    }),
-
-    defineField({
-      name: "material",
-      title: "Material",
-      type: "string",
-      description: "E.g., '100% Cotton', 'Silk Blend'",
-    }),
-
-    defineField({
-      name: "width",
-      title: "Width (inches)",
-      type: "number",
-      description: "Only applicable for fabrics sold by the meter.",
-    }),
-
-    defineField({
-      name: "useCases",
-      title: "Suggested Use Cases",
-      type: "text",
-      description: "E.g., 'Great for Sarees, Tunics, Kurtas, Dresses, and Tops...'",
+      name: "description",
+      title: "Description",
+      type: "blockContent", 
+      group: "main",
     }),
 
     defineField({
       name: "isFeatured",
-      title: "Featured Product",
+      title: "Feature on Homepage",
       type: "boolean",
-      description: "Toggle to feature this product on the homepage.",
+      group: "main",
       initialValue: false,
     }),
-
-    defineField({
-      name: "description",
-      title: "Description",
-      type: "blockContent", // Use blockContent for rich text
-      description: "Tell the story behind this product, its craft, and details.",
-    }),
   ],
-
   preview: {
     select: {
       title: "name",
-      category: "category.name",
+      price: "price",
       media: "variants.0.images.0.asset",
     },
-    prepare({ title, category, media }) {
+    prepare({ title, price, media }) {
       return {
         title,
-        subtitle: category ? `in ${category}` : "Product",
+        subtitle: `LKR ${price} / m`,
         media: media || TrolleyIcon,
       };
     },

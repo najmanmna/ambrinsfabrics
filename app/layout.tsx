@@ -1,94 +1,94 @@
 import React from "react";
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Cormorant_Garamond } from "next/font/google"; // 1. Luxury Serif Font
 import { SanityLive } from "@/sanity/lib/live";
 import { Toaster as HotToaster } from "react-hot-toast";
-import WhatsAppButton from "@/components/WhatsAppButton";
+
+// 2. Ambrins Components
+import Header from "@/components/header/Header";
+import Footer from "@/components/common/Footer";
+import LinkBadge from "@/components/common/LinkBadge";
 
 import "./globals.css";
 
-// Import Google Font (Poppins) with multiple weights
-const poppins = Poppins({
+// Configure Cormorant Garamond for Headings
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-poppins",
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-cormorant",
   display: "swap",
 });
 
 export const metadata: Metadata = {
   title: {
-    template: "%s - ELDA",
-    default: "ELDA | HOUSE OF BLOCK PRINTS",
+    template: "%s | Ambrins Fabrics",
+    default: "Ambrins Fabrics | Since 1999",
   },
-  description: "ELDA | HOUSE OF BLOCK PRINTS",
+  description: "Curating Colombo’s finest silks, laces, and artisan prints.",
   icons: {
-    icon: "/favicon.jpg",
-    shortcut: "/favicon.jpg",
-    apple: "/favicon.jpg",
+    icon: "/favicon.ico",
   },
 };
 
-const RootLayout = async ({ children }: { children: React.ReactNode }) => {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body
-        className={`${poppins.variable} pt-25 antialiased bg-tech_bg_color relative`}
+        className={`${cormorant.variable} antialiased bg-ambrins_linen text-ambrins_black relative font-body`}
       >
-        {/* Background layer */}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: "url('/bg-pattern.png')",
-            backgroundRepeat: "repeat",
-            backgroundSize: "30%",
-            backgroundAttachment: "fixed",
-            opacity: 0.05, // 5% opacity
-          }}
-        ></div>
+        {/* --- 1. Fixed Header --- */}
+        {/* <Header /> */}
 
-        {/* Content layer */}
-        <div className="relative z-10">
+        {/* --- 2. Link Badge (Promo Bar) --- */}
+        {/* Note: Since Header is fixed, ensure LinkBadge has appropriate top spacing if needed */}
+        {/* <LinkBadge /> */}
+
+        {/* --- 3. Main Content --- */}
+        <main className="relative z-10 min-h-screen">
           {children}
+        </main>
 
-          {/* Toaster */}
+        {/* --- 4. Footer --- */}
+        {/* <Footer /> */}
+
+        {/* --- 5. Global Utilities --- */}
+        
+        {/* Luxury Themed Notifications */}
         <HotToaster
-      position="bottom-right" // <--- CHANGED THIS LINE
-      toastOptions={{
-        duration: 4000,
-        style: {
-          borderRadius: "12px",
-          background: "#2C3E50", // Deep, elegant charcoal
-          color: "#FDFBF6", // Warm, off-white text
-          padding: "16px",
-          fontFamily: "var(--font-serif)", // Assumes you have a serif font variable
-          fontWeight: "500",
-          border: "1px solid #46627f", // Subtle border
-        },
-        success: {
-          iconTheme: {
-            primary: "#5A7D7C", // Muted, earthy green
-            secondary: "#FDFBF6",
-          },
-        },
-        error: {
-          iconTheme: {
-            primary: "#B85C5C", // Soft terracotta red
-            secondary: "#FDFBF6",
-          },
-        },
-      }}
-    />
- 
+          position="bottom-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              borderRadius: "0px", // Sharp corners for luxury feel
+              background: "#1A1A1A", // Ambrins Off-Black
+              color: "#FDFCF9", // Linen White
+              padding: "16px",
+              fontFamily: "var(--font-satoshi)", 
+              border: "1px solid #B89552", // Gold Border
+              boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+            },
+            success: {
+              iconTheme: {
+                primary: "#B89552", // Gold Icon
+                secondary: "#1A1A1A",
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: "#B85C5C", // Muted Red
+                secondary: "#FDFCF9",
+              },
+            },
+          }}
+        />
 
-          {/* Sanity Live */}
-          <SanityLive />
-
-          {/* Floating WhatsApp Button */}
-          {/* <WhatsAppButton /> */}
-        </div>
+        {/* Sanity Live Preview */}
+        <SanityLive />
       </body>
     </html>
   );
-};
-
-export default RootLayout;
+}
