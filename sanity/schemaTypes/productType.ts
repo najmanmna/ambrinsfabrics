@@ -29,8 +29,23 @@ export const productType = defineType({
       validation: (Rule) => Rule.required(),
     }),
 
+    // --- NEW FIELDS (Required by Frontend) ---
+    defineField({
+      name: "material",
+      title: "Material Composition",
+      type: "string",
+      group: "main",
+      description: "e.g. 100% Pure Silk, Cotton Linen Blend",
+    }),
+    defineField({
+      name: "width",
+      title: "Fabric Width",
+      type: "string",
+      group: "main",
+      description: "e.g. 45 inches, 60 inches",
+    }),
+
     // --- 2. CATEGORIZATION ---
-    // Mandatory Level 1
     defineField({
       name: "category",
       title: "Main Category",
@@ -40,15 +55,12 @@ export const productType = defineType({
       options: { filter: "!defined(parent)" }, 
       validation: (Rule) => Rule.required(),
     }),
-
-    // Optional Level 2
     defineField({
       name: "subcategory",
       title: "Subcategory (Optional)",
       type: "reference",
       group: "main",
       to: [{ type: "category" }],
-      description: "Leave empty if not needed.",
       options: {
         filter: ({ document }) => {
           const categoryId = (document?.category as { _ref: string })?._ref;
@@ -59,14 +71,11 @@ export const productType = defineType({
       },
       readOnly: ({ document }) => !document?.category,
     }),
-
-    // Flexible Marketing Collections
     defineField({
       name: "collections",
       title: "Marketing Collections",
       type: "array",
       group: "main",
-      description: "E.g. 'Bridal Edit', 'New Arrivals'",
       of: [{ type: "reference", to: [{ type: "collection" }] }], 
     }),
 
@@ -148,9 +157,17 @@ export const productType = defineType({
             }),
             defineField({
               name: "openingStock",
-              title: "Stock (Meters)",
+              title: "Opening Stock (Meters)",
               type: "number",
               validation: (Rule) => Rule.required().min(0),
+            }),
+            // NEW FIELD: Stock Out (Crucial for calculation)
+            defineField({
+              name: "stockOut",
+              title: "Stock Sold/Reserved",
+              type: "number",
+              initialValue: 0,
+              description: "Do not edit manually unless correcting inventory.",
             }),
             defineField({
               name: "images",
@@ -164,12 +181,14 @@ export const productType = defineType({
             select: {
               title: "variantName",
               stock: "openingStock",
+              sold: "stockOut",
               media: "images.0.asset",
             },
-            prepare({ title, stock, media }) {
+            prepare({ title, stock, sold, media }) {
+              const available = (stock || 0) - (sold || 0);
               return {
                 title,
-                subtitle: `${stock} Meters`,
+                subtitle: `${available}m Available`,
                 media,
               };
             },
@@ -185,7 +204,6 @@ export const productType = defineType({
       type: "blockContent", 
       group: "main",
     }),
-
     defineField({
       name: "isFeatured",
       title: "Feature on Homepage",

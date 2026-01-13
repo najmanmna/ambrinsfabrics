@@ -53,11 +53,11 @@ export const ALL_PRODUCTS_QUERY = defineQuery(`
       _key,
       variantName,
       openingStock,
-      "availableStock": openingStock, // or add your stock logic
+      stockOut,
+      // 👇 Keeps your stock logic accurate (Opening - Sold)
+      "availableStock": openingStock - coalesce(stockOut, 0),
       
-      // 👇 CHANGE THIS LINE
-      // Old: images[]{asset->{url}}
-      // New: Fetch the full image object so the builder works
+      // 👇 This is perfect for the image builder
       images[]
     }
   }
@@ -124,10 +124,17 @@ export const PRODUCT_BY_SLUG_QUERY = defineQuery(`
     price,
     discount,
     isFeatured,
+    
+    // --- UPDATED SPECS ---
     material,
     width,
+    handFeel,
+    drape,
+    translucency,
     useCases,
     description,
+    // ---------------------
+
     "category": category->{
       _id,
       name,

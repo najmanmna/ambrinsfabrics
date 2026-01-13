@@ -1,16 +1,19 @@
 import Container from "@/components/Container";
 import CategoryProducts from "@/components/CategoryProducts";
-import Title from "@/components/Title";
-import { client } from "@/sanity/lib/client"; // Import the Sanity client
-// import { ALLCATEGORIES_QUERY } from "@/sanity/queries"; // <-- REMOVED this line
-import { ExpandedCategory } from "@/components/header/MobileMenu"; // Import the shared type
+import { client } from "@/sanity/lib/client";
+import { ExpandedCategory } from "@/components/header/MobileMenu";
 import React from "react";
-import { groq } from "next-sanity"; // Import groq to define the query
+import { groq } from "next-sanity";
+import { Metadata } from "next";
 
-// --- FIX: Defined the query directly in this file ---
-const ALLCATEGORIES_QUERY = groq`
-  *[_type == "category"] | order(_createdAt asc){
-    ...,
+// --- QUERIES ---
+
+// 1. Fetch all categories for the Sidebar navigation
+const ALL_CATEGORIES_QUERY = groq`
+  *[_type == "category"] | order(name asc){
+    _id,
+    name,
+    slug,
     parent->{
       _id,
       name,
@@ -19,6 +22,27 @@ const ALLCATEGORIES_QUERY = groq`
   }
 `;
 
+// 2. Fetch just the name for SEO Metadata
+const CATEGORY_NAME_QUERY = groq`
+  *[_type == "category" && slug.current == $slug][0].name
+`;
+
+// --- SEO METADATA ---
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: { slug: string } 
+}): Promise<Metadata> {
+  // Fetch category name dynamically
+  const categoryName = await client.fetch(CATEGORY_NAME_QUERY, { slug: params.slug });
+
+  return {
+    title: categoryName ? `${categoryName} | Ambrins Fabrics` : "Collection | Ambrins Fabrics",
+    description: `Browse our exclusive collection of ${categoryName || "fabrics"} at Ambrins.`,
+  };
+}
+
+// --- MAIN COMPONENT ---
 const CategoryPage = async ({
   params,
 }: {
@@ -26,13 +50,13 @@ const CategoryPage = async ({
 }) => {
   const { slug } = params;
   
-  // Fetch ALL categories, not just the 2-level ones
-  const categories = await client.fetch<ExpandedCategory[]>(ALLCATEGORIES_QUERY);
+  // Fetch ALL categories to pass down to the client component (for Sidebar/Filtering)
+  const categories = await client.fetch<ExpandedCategory[]>(ALL_CATEGORIES_QUERY);
 
   return (
-    <div>
-      <Container className="py-0">
-        {/* Pass the complete list of categories to the client component */}
+    <div className="bg-[#FAFAFA] min-h-screen">
+      <Container className="py-0 px-0 max-w-full">
+        {/* Render the Client Component */}
         <CategoryProducts categories={categories} slug={slug} />
       </Container>
     </div>
@@ -40,4 +64,3 @@ const CategoryPage = async ({
 };
 
 export default CategoryPage;
-

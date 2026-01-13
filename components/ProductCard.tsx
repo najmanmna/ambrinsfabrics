@@ -1,7 +1,7 @@
 "use client";
 
 import { ALL_PRODUCTS_QUERYResult } from "@/sanity.types";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import PriceView from "./PriceView";
 import Link from "next/link";
 import Title from "./Title";
@@ -27,11 +27,7 @@ const ProductCard = ({
   const [hovered, setHovered] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
 
-  // --- DEBUGGING: Check if slug exists ---
   const slug = product?.slug?.current;
-  if (!slug) {
-    console.warn("Product missing slug:", product?.name);
-  }
 
   // 1. Extract Images
   const variantImages =
@@ -45,18 +41,30 @@ const ProductCard = ({
   const primaryImageUrl = primaryImage ? image(primaryImage).url() : null;
   const secondaryImageUrl = secondaryImage ? image(secondaryImage).url() : null;
 
-  // 2. Calculate Stock
-  const totalStock =
-    product?.variants?.reduce((acc, v) => {
-      if (!v) return acc;
-      const stock =
-        typeof v.availableStock === "number"
-          ? v.availableStock
-          : (v.openingStock || 0) - (v.stockOut || 0);
-      return acc + Math.max(stock, 0);
-    }, 0) || 0;
+  // 2. FIXED STOCK CALCULATION
+  // We use useMemo to calculate this only when product data changes.
+  const isOutOfStock = useMemo(() => {
+    // If no variants exist, it is strictly out of stock
+    if (!product?.variants || product.variants.length === 0) {
+      return true;
+    }
 
-  const isOutOfStock = totalStock === 0;
+    // Check if ANY single variant has stock > 0
+    const hasAvailableVariant = product.variants.some((variant) => {
+      // 1. Try pre-calculated value from GROQ
+      if (typeof variant.availableStock === 'number') {
+        return variant.availableStock > 0;
+      }
+      
+      // 2. Fallback manual calculation
+      const open = variant.openingStock ?? 0; // Use ?? 0 to handle nulls safely
+      const out = variant.stockOut ?? 0;
+      return (open - out) > 0;
+    });
+
+    // If we found an available variant, isOutOfStock is false.
+    return !hasAvailableVariant;
+  }, [product]);
 
   return (
     <div
@@ -66,7 +74,7 @@ const ProductCard = ({
     >
       <div className="relative z-10 flex flex-col h-full">
         
-        {/* --- DISCOUNT BADGE (Rani Pink) --- */}
+        {/* --- DISCOUNT BADGE --- */}
         {product.discount && product.discount > 0 && !isOutOfStock && (
           <div className="absolute top-2 left-2 bg-ambrins_primary text-white text-[10px] font-body font-bold uppercase tracking-widest px-2 py-1 z-30 rounded-sm shadow-sm">
             -{product.discount}%
@@ -74,7 +82,6 @@ const ProductCard = ({
         )}
 
         {/* --- IMAGE CONTAINER --- */}
-        {/* FIX: Only render Link if slug exists to prevent loading errors */}
         {slug ? (
           <Link
             href={`/product/${slug}`}
@@ -127,7 +134,6 @@ const ProductCard = ({
             )}
           </Link>
         ) : (
-            // Fallback if NO SLUG (Prevents broken links)
             <div className="relative w-full aspect-[3/4] bg-gray-100 flex items-center justify-center text-xs text-red-500 font-bold">
                 Error: No Slug
             </div>
@@ -136,15 +142,14 @@ const ProductCard = ({
         {/* --- DETAILS SECTION --- */}
         <div className="pt-4 pb-4 px-3 flex flex-col items-center text-center gap-1 flex-grow">
           
-          {/* Category Label (Marigold) */}
+          {/* Category Label */}
           <span className="text-[10px] font-bold text-ambrins_secondary uppercase tracking-widest">
              {product?.category?.name || "Textile"}
           </span>
 
           {/* Title */}
           {slug ? (
-                  <Link href={`/`}>
-            {/* // <Link href={`/product/${slug}`}> */}
+            <Link href={`/product/${slug}`}>
                 <Title className="font-heading text-lg text-ambrins_dark leading-tight line-clamp-2 group-hover:text-ambrins_primary transition-colors duration-300">
                 {product?.name}
                 </Title>
@@ -154,7 +159,6 @@ const ProductCard = ({
                 {product?.name}
             </Title>
           )}
-
 
           {/* Price / Action Slider Area */}
           <div className="relative h-9 w-full overflow-hidden mt-2">
@@ -171,16 +175,14 @@ const ProductCard = ({
                 price={product?.price}
                 discount={product.discount}
                 className="text-base font-body font-medium text-ambrins_dark"
-                // FIX: Force "/ meter" as requested
                 unitLabel="/ meter"
               />
             </div>
 
-            {/* 2. Shop Button (Hover State - Rani Pink) */}
+            {/* 2. Shop Button (Hover State) */}
             {!isOutOfStock && slug && (
               <Link
-                // href={`/product/${slug}`}
-                href={`/`}
+                href={`/product/${slug}`}
                 className={`absolute inset-0 flex items-center justify-center bg-ambrins_primary text-white font-body text-[10px] font-bold tracking-[0.2em] uppercase rounded-sm transition-all duration-500 ease-in-out transform hover:bg-ambrins_dark ${
                   hovered
                     ? "translate-y-0 opacity-100"
