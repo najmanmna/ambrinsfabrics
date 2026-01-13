@@ -9,7 +9,7 @@ interface EmailProps {
   html: string;
 }
 // Initialize Resend with your API key
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || "re_123");
 
 export const sendSubscribeEmail = async ({ to, subject, html }: EmailProps) => {
   if (!process.env.RESEND_API_KEY) {
