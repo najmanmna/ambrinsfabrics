@@ -2,7 +2,7 @@
 // import { backendClient } from "@/sanity/lib/backendClient";
 // import { groq } from "next-sanity"; // Import groq
 
-// export const runtime = "edge";
+export const runtime = "edge";
 
 // // This is the correct GROQ query.
 // // It fetches the order and "dereferences" (follows) the product

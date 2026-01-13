@@ -1,5 +1,5 @@
 // // /app/api/checkout/route.ts
-// export const runtime = "edge";
+export const runtime = "edge";
 // import { NextResponse } from "next/server";
 // import { backendClient } from "@/sanity/lib/backendClient";
 // import { v4 as uuidv4 } from "uuid";
