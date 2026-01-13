@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    // ☁️ CLOUDFLARE FIX:
+    // The Free Tier doesn't support the default Next.js Image Optimization API.
+    // We disable it so images load directly from Sanity/Clerk without breaking.
+    unoptimized: true, 
     remotePatterns: [
       {
         protocol: "https",
@@ -28,4 +32,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-

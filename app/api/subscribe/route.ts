@@ -1,7 +1,7 @@
 // import { NextRequest, NextResponse } from "next/server";
 // import { backendClient } from "@/sanity/lib/backendClient";
 // import { sendSubscribeEmail } from "@/lib/sendSubscribeEmail";
-// export const runtime = "nodejs";
+// export const runtime = "edge";
 
 // // Email templates
 // const customerEmailTemplate = (email: string) => `

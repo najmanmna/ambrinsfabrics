@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@cloudflare/next-on-pages':
-        specifier: ^1.13.12
-        version: 1.13.16(next@15.3.6(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(wrangler@4.54.0)
       '@headlessui/react':
         specifier: ^2.2.9
         version: 2.2.9(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -180,6 +177,9 @@ importers:
         specifier: ^5.0.1
         version: 5.0.9(@types/react@19.2.7)(immer@10.2.0)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
     devDependencies:
+      '@cloudflare/next-on-pages':
+        specifier: ^1.13.12
+        version: 1.13.16(next@15.3.6(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(wrangler@4.54.0)
       '@eslint/eslintrc':
         specifier: ^3
         version: 3.3.3

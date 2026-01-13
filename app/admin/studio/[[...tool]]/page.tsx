@@ -1,5 +1,8 @@
 "use client";
 
+// 👇 ADD THIS LINE
+export const dynamic = "force-static";
+
 import dynamic from "next/dynamic";
 import config from "../../../../sanity.config";
 
@@ -12,5 +15,3 @@ const NextStudio = dynamic(
 export default function StudioPage() {
   return <NextStudio config={config} />;
 }
-
-

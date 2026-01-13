@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 import React from "react";
 import type { Metadata } from "next";
 import { Cormorant_Garamond } from "next/font/google"; // 1. Luxury Serif Font
