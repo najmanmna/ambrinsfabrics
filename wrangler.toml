@@ -2,3 +2,7 @@ name = "ambrinsfabrics"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
+
+
+NEXT_PUBLIC_SANITY_PROJECT_ID = "vxrs2vrl"
+NEXT_PUBLIC_SANITY_DATASET = "production"
