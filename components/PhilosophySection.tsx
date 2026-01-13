@@ -77,7 +77,7 @@ const PhilosophySection = () => {
 
                 {/* Paragraph */}
                 <p className="font-body text-ambrins_text/80 text-sm md:text-base leading-relaxed mb-10 relative z-10">
-                  For over two decades, Ambrins has been the silent partner to Colombo’s most demanding brides and designers. We don’t just sell fabric; we curate texture, drape, and possibility.
+                  For over two decades, Ambrins has been the silent partner to Colombo’s most demanding brides and designers to everyday women who love bringing their own outfits to life. Whether you’re crafting a statement piece or an everyday essential, Ambrins Fabrics is your one-stop destination for fabrics that inspire imagination and individuality
                 </p>
 
                 {/* "Read Story" Button */}
@@ -99,7 +99,7 @@ const PhilosophySection = () => {
                 <div className="relative bg-ambrins_secondary/5 p-6 border-l-4 border-ambrins_secondary group hover:bg-ambrins_secondary/10 transition-colors duration-300">
                   <p className="font-body text-sm text-ambrins_dark mb-4 leading-relaxed">
                     <span className="font-bold text-ambrins_secondary block text-xs uppercase tracking-wider mb-1">Also Featuring</span>
-                    <span className="font-heading text-xl">Elda Artisan</span> — Our dedicated sub-brand for heritage hand-block prints.
+                    <span className="font-heading text-xl">Elda House of Block Prints</span> — Our dedicated sub-brand for heritage hand-block prints.
                   </p>
                   
                   <Link 

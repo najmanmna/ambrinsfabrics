@@ -60,7 +60,7 @@ const VisitStudio = () => {
                     </h2>
 
                     <p className="font-body text-ambrins_text/80 text-sm md:text-base leading-relaxed mb-10 max-w-lg mx-auto">
-                        Visit our flagship studio in the heart of Colombo&apos;s textile hub. Touch the silks, see the true colors under natural light, and consult with our master curators.
+                        Visit our flagship studio in the heart of Colombo&apos;s textile hub. Experience the fabrics up close, feel the textures, see the true colours and enjoy personalised assistance from our friendly sales team, who will guide you through our collection and help you find what you&apos;re looking for.
                     </p>
 
                     <Link
