@@ -404,7 +404,7 @@ export default function CheckoutPage() {
                     return (
                       <div key={itemKey} className="flex gap-4 py-2 border-b border-dashed border-ambrins_dark/10 last:border-0">
                         <div className="relative w-14 h-16 bg-ambrins_light flex-shrink-0 border border-ambrins_dark/10 rounded-sm overflow-hidden">
-                          <Image loader={thumbnailLoader} src={imgUrl} fill className="object-cover" />
+                          <Image loader={thumbnailLoader} src={imgUrl} alt="productimage" fill className="object-cover" />
                         </div>
                         <div className="flex-1">
                           <p className="font-heading text-sm text-ambrins_dark line-clamp-1">{product.name}</p>
