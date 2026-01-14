@@ -22,7 +22,7 @@ const companyLinks = [
 const legalLinks = [
   { href: "/terms", title: "Terms & Conditions" },
   { href: "/privacy-policy", title: "Privacy Policy" }, // Matches your file structure
-  { href: "/return-policy", title: "Returns & Exchanges" }, // Matches your file structure
+  { href: "/returns", title: "Returns & Exchanges" }, // Matches your file structure
 ];
 
 // --- SVG: Decorative Footer Mandala ---

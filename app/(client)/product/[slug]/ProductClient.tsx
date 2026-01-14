@@ -347,7 +347,7 @@ export default function ProductClient({ product }: { product: any }) {
 
                            {/* Link */}
                            <div className="mt-4 pt-4 border-t border-ambrins_dark/5">
-                             <Link href="/refund-policy" className="text-xs font-bold uppercase tracking-widest text-ambrins_secondary hover:text-ambrins_dark flex items-center gap-2 group">
+                             <Link href="/returns" className="text-xs font-bold uppercase tracking-widest text-ambrins_secondary hover:text-ambrins_dark flex items-center gap-2 group">
                                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                                View Full Exchange & Return Policy
                              </Link>
