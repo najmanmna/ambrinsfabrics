@@ -1,186 +1,162 @@
 "use client";
 
+import React from "react";
 import { motion } from "framer-motion";
 import Container from "@/components/Container";
-import Link from "next/link";
-import { Lock, Database, Share2, Mail, Edit, Shield } from "lucide-react"; // Removed Cookie icon
+import { ShieldCheck, Lock, Eye, FileText, Mail } from "lucide-react";
+
+const sections = [
+  {
+    id: "collection",
+    title: "1. Information We Collect",
+    icon: FileText,
+    content: (
+      <>
+        <p className="mb-4">
+          When you visit Ambrins Fabrics or place an order, we may collect specific information to ensure a seamless experience:
+        </p>
+        <ul className="list-disc pl-5 space-y-2 text-ambrins_text/80 marker:text-ambrins_secondary">
+          <li>
+            <strong className="text-ambrins_dark">Personal Details:</strong> Your name, shipping address, email, and phone number, provided voluntarily during checkout.
+          </li>
+          <li>
+            <strong className="text-ambrins_dark">Payment Data:</strong> Payment processing is handled securely by our trusted third-party partners (e.g., Payable). Ambrins Fabrics <strong>does not</strong> store your full credit card details or sensitive financial data on our servers.
+          </li>
+          <li>
+            <strong className="text-ambrins_dark">Order History:</strong> We maintain a record of your purchases to assist with returns, exchanges, and future recommendations.
+          </li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: "usage",
+    title: "2. How We Use Your Information",
+    icon: Eye,
+    content: (
+      <>
+        <p className="mb-4">We use the information collected for the following purposeful actions:</p>
+        <ul className="list-disc pl-5 space-y-2 text-ambrins_text/80 marker:text-ambrins_secondary">
+          <li>To process orders, coordinate fabric cutting, and manage island-wide delivery.</li>
+          <li>To communicate order updates, shipping confirmations, and customer support responses.</li>
+          <li>To improve our curated collection based on purchasing trends and customer feedback.</li>
+          <li>To detect and prevent fraud, ensuring a secure shopping environment for all patrons.</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: "sharing",
+    title: "3. Information Sharing",
+    icon: ShieldCheck,
+    content: (
+      <>
+        <p className="mb-4">
+          We respect your privacy as we do our own. We <strong>never</strong> sell, trade, or rent your personal data to advertisers. Information is shared only in strict necessity:
+        </p>
+        <ul className="list-disc pl-5 space-y-2 text-ambrins_text/80 marker:text-ambrins_secondary">
+          <li>
+            <strong className="text-ambrins_dark">Service Partners:</strong> We share delivery details with our courier partners and payment data with our payment gateway to fulfill your contract.
+          </li>
+          <li>
+            <strong className="text-ambrins_dark">Legal Compliance:</strong> We may disclose information if required by Sri Lankan law or in response to valid legal processes.
+          </li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: "security",
+    title: "4. Data Security",
+    icon: Lock,
+    content: (
+      <>
+        <p>
+          We implement industry-standard security measures (SSL Encryption) to protect your personal information during transmission and storage. While we strive for absolute security, please understand that no method of digital transmission is 100% infallible. We are committed to commercially acceptable means of protecting your data.
+        </p>
+      </>
+    ),
+  },
+];
 
 const PrivacyPolicyPage = () => {
-  const sectionVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.8, ease: "easeOut" },
-    },
-  };
-
   return (
-    <section className="bg-[#FDFBF6] text-[#2C3E50] py-20 sm:py-28">
-      <Container className="max-w-4xl">
-        <motion.div initial="hidden" animate="visible" variants={sectionVariants} className="text-center mb-16">
-          <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-[#2C3E50] mb-4">
-            Privacy Policy
-          </h1>
-          <p className="text-lg text-gray-700 max-w-2xl mx-auto">
-            At ELDA by Ambrins Fabrics, we are committed to protecting the privacy and security of your personal information.
-            This policy outlines how we collect, use, and safeguard your data when you visit or make a purchase from our website.
-            By using our website, you consent to the practices described here.
-          </p>
-          <p className="text-sm text-gray-500 mt-4">Last Updated: October 20, 2025</p>
-        </motion.div>
+    <div className="bg-ambrins_light min-h-screen">
+      
+      {/* --- HERO HEADER --- */}
+      <section className="pt-32 pb-20 border-b border-ambrins_dark/5">
+        <Container className="text-center max-w-3xl">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="inline-block py-1 px-3 border border-ambrins_dark/20 rounded-full text-[10px] font-bold uppercase tracking-widest text-ambrins_dark mb-6">
+              Legal & Compliance
+            </span>
+            <h1 className="font-heading text-4xl md:text-6xl text-ambrins_dark mb-6">
+              Privacy Policy
+            </h1>
+            <p className="text-ambrins_text/70 text-lg leading-relaxed">
+              At Ambrins Fabrics, your trust is as valuable as our textiles. This document outlines how we collect, safeguard, and use your personal information.
+            </p>
+            <p className="text-xs font-bold uppercase tracking-widest text-ambrins_secondary mt-8">
+              Last Updated: January 2026
+            </p>
+          </motion.div>
+        </Container>
+      </section>
 
-        {/* Section: Information We Collect */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={sectionVariants}
-          className="bg-white p-8 rounded-lg shadow-md border border-[#D7C8BB] mb-12"
-        >
-          <div className="flex items-start gap-4 mb-6">
-            <Database size={36} className="text-[#A67B5B] flex-shrink-0 mt-1" />
-            <div>
-              <h2 className="font-playfair text-3xl font-semibold text-[#2C3E50]">1. Information We Collect</h2>
-              <p className="mt-2 text-lg text-gray-700 leading-relaxed mb-4">
-                When you visit our website or place an order, we may collect certain information, including:
-              </p>
-              <ul className="list-disc pl-8 space-y-3 text-lg text-gray-700">
-                <li>
-                    <span className="font-bold"> Personal Identification Information: </span>
-             Such as your name, email address, shipping address, and phone number,
-                  provided voluntarily by you during the checkout process.
-                </li>
-                <li>
-                  <span className="font-bold">Payment Information: </span> Details necessary to process your order (e.g., credit card information).
-                  This is securely handled by our trusted third-party payment processor (e.g., PayHere, facilitated by Ambrins Fabrics).
-                  ELDA does not store your full payment card details.
-                </li>
-                {/* Removed browsing information collected automatically by cookies */}
-              </ul>
-            </div>
+      {/* --- CONTENT BODY --- */}
+      <section className="py-20 md:py-28">
+        <Container className="max-w-4xl">
+          <div className="space-y-16">
+            {sections.map((section, idx) => (
+              <motion.div 
+                key={section.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                className="grid grid-cols-1 md:grid-cols-12 gap-8 border-b border-ambrins_dark/5 pb-16 last:border-0 last:pb-0"
+              >
+                {/* Left: Title */}
+                <div className="md:col-span-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <section.icon className="w-5 h-5 text-ambrins_secondary" />
+                    <h2 className="font-heading text-2xl text-ambrins_dark">
+                      {section.title}
+                    </h2>
+                  </div>
+                </div>
+
+                {/* Right: Content */}
+                <div className="md:col-span-8 text-ambrins_text/80 leading-relaxed">
+                  {section.content}
+                </div>
+              </motion.div>
+            ))}
           </div>
-        </motion.div>
+        </Container>
+      </section>
 
-        {/* Section: Use of Information */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={sectionVariants}
-          className="bg-white p-8 rounded-lg shadow-md border border-[#D7C8BB] mb-12"
-        >
-          <div className="flex items-start gap-4 mb-6">
-            <Share2 size={36} className="text-[#5A7D7C] flex-shrink-0 mt-1" />
-            <div>
-              <h2 className="font-playfair text-3xl font-semibold text-[#2C3E50]">2. How We Use Your Information</h2>
-              <p className="mt-2 text-lg text-gray-700 leading-relaxed mb-4">
-                We use the information collected for the following purposes:
-              </p>
-              <ul className="list-disc pl-8 space-y-3 text-lg text-gray-700">
-                <li>To process and fulfill your orders, including shipping and delivery coordination.</li>
-                <li>To communicate with you regarding your purchases, provide customer support, and respond to your inquiries.</li>
-                {/* Removed personalization based on browsing patterns */}
-                <li>To improve our website, product offerings, and services based on user feedback.</li>
-                <li>To detect and prevent fraud, unauthorized activities, and ensure the security of our website.</li>
-              </ul>
-            </div>
-          </div>
-        </motion.div>
+      {/* --- FOOTER CONTACT --- */}
+      {/* <section className="bg-white py-20 border-t border-ambrins_dark/5">
+        <Container className="text-center">
+           <h3 className="font-heading text-2xl text-ambrins_dark mb-4">Questions regarding your data?</h3>
+           <p className="text-ambrins_text/60 mb-8 max-w-lg mx-auto">
+             If you have concerns about our privacy practices or wish to request data deletion, please contact our support team.
+           </p>
+           <a 
+             href="mailto:ambrins.fabricstore@gmail.com" 
+             className="inline-flex items-center gap-3 px-8 py-3 bg-ambrins_dark text-white font-bold uppercase tracking-widest text-xs hover:bg-ambrins_secondary transition-colors duration-300"
+           >
+             <Mail className="w-4 h-4" /> Contact Support
+           </a>
+        </Container>
+      </section> */}
 
-        {/* Section: Information Sharing */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={sectionVariants}
-          className="bg-white p-8 rounded-lg shadow-md border border-[#D7C8BB] mb-12"
-        >
-          <div className="flex items-start gap-4 mb-6">
-            <Lock size={36} className="text-[#B98B73] flex-shrink-0 mt-1" />
-            <div>
-              <h2 className="font-playfair text-3xl font-semibold text-[#2C3E50]">3. Information Sharing</h2>
-              <p className="mt-2 text-lg text-gray-700 leading-relaxed mb-4">
-                We respect your privacy and do not sell, trade, or rent your personal information to third parties.
-                We only share your information in the following limited circumstances:
-              </p>
-              <ul className="list-disc pl-8 space-y-3 text-lg text-gray-700">
-                <li>
-                  <span className="font-bold">Trusted Service Providers: </span > We share necessary information with companies that help us operate our business,
-                  such as payment processors (facilitated by Ambrins Fabrics) and shipping carriers. These providers are
-                  contractually obligated to protect your data.
-                </li>
-                <li>
-                  <span className="font-bold">Legal Requirements: </span > We may disclose your information if required by law or in response to valid legal requests
-                  (e.g., court orders, government inquiries).
-                </li>
-              </ul>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Section: Data Security */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={sectionVariants}
-          className="bg-white p-8 rounded-lg shadow-md border border-[#D7C8BB] mb-12"
-        >
-          <div className="flex items-start gap-4 mb-6">
-            <Shield size={36} className="text-[#A67B5B] flex-shrink-0 mt-1" />
-            <div>
-              <h2 className="font-playfair text-3xl font-semibold text-[#2C3E50]">4. Data Security</h2>
-              <p className="mt-2 text-lg text-gray-700 leading-relaxed">
-                We implement industry-standard security measures to protect your personal information from unauthorized access,
-                alteration, or disclosure. However, please understand that no method of transmission over the internet or
-                electronic storage is 100% secure. While we strive to use commercially acceptable means to protect your data,
-                we cannot guarantee its absolute security.
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Section: Changes to Policy - Renumbered from 6 to 5 */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={sectionVariants}
-          className="bg-white p-8 rounded-lg shadow-md border border-[#D7C8BB] mb-12"
-        >
-          <div className="flex items-start gap-4 mb-6">
-            <Edit size={36} className="text-[#A67B5B] flex-shrink-0 mt-1" />
-            <div>
-              <h2 className="font-playfair text-3xl font-semibold text-[#2C3E50]">5. Changes to this Privacy Policy</h2>
-              <p className="mt-2 text-lg text-gray-700 leading-relaxed">
-                We reserve the right to update or modify this Privacy Policy at any time. Any changes will be posted on this page
-                with a revised "Last Updated" date at the top. We encourage you to review this policy periodically to stay informed
-                about how we collect, use, and protect your information.
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Contact Us */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={sectionVariants}
-          className="text-center mt-16"
-        >
-          <h2 className="font-playfair text-3xl font-semibold text-[#2C3E50] mb-4">Contact Us</h2>
-          <p className="text-lg text-gray-700 max-w-2xl mx-auto">
-            If you have any questions, concerns, or requests regarding our Privacy Policy or the handling of your
-            personal information, please contact us:
-          </p>
-          <p className="mt-4 text-xl text-[#A67B5B] font-semibold flex items-center justify-center gap-2">
-            <Mail size={20} /> <a href="mailto:ambrins.fabricstore@gmail.com" className="hover:underline">ambrins.fabricstore@gmail.com</a>
-          </p>
-        </motion.div>
-      </Container>
-    </section>
+    </div>
   );
 };
 

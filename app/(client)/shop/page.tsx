@@ -1,14 +1,17 @@
 import React from "react";
 import Container from "@/components/Container";
-import Title from "@/components/Title";
-import AllProductsGrid from "@/components/AllProductsGrid";
+import ShopInterface from "@/components/ShopInterface"; // Renamed for clarity
+
+export const metadata = {
+  title: "Shop All Fabrics | Ambrins",
+  description: "Browse our exclusive collection of hand-block prints, silks, and cottons.",
+};
 
 const ProductsPage = () => {
   return (
-    <Container className="py-5">
-     
-      <AllProductsGrid />
-    </Container>
+    <div className=" min-h-screen">
+      <ShopInterface />
+    </div>
   );
 };
 

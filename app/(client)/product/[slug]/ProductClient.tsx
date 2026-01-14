@@ -123,7 +123,7 @@ export default function ProductClient({ product }: { product: any }) {
       {buying && <Loading />}
       
       <div className="bg-ambrins_light min-h-screen">
-        <div className="container mx-auto px-4 md:px-8 max-w-[1600px] py-12">
+        <div className="container mx-auto px-4 md:px-8 max-w-[1600px] py-32">
           
           {/* --- BREADCRUMBS --- */}
           <nav className="text-[10px] uppercase tracking-[0.2em] font-bold text-ambrins_text/60 mb-8 flex flex-wrap gap-2">

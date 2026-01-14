@@ -5,24 +5,24 @@ import Link from "next/link";
 import { FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { Send } from "lucide-react";
 
-// Define Links
+// --- UPDATED LINKS ---
 const shopLinks = [
   { href: "/shop", title: "All Fabrics" },
   { href: "/collections", title: "Collections" },
-  { href: "/new-arrivals", title: "New Arrivals" },
+  { href: "/shop?sort=newest", title: "New Arrivals" }, // Auto-sorts shop by newest
   { href: "/elda", title: "Elda Artisan" },
 ];
 
 const companyLinks = [
   { href: "/about", title: "Our Story" },
-  { href: "/visit", title: "Visit Studio" },
+  { href: "/contact", title: "Visit Studio" }, // Points to the centralized Contact/Visit page
   { href: "/contact", title: "Contact Us" },
 ];
 
 const legalLinks = [
   { href: "/terms", title: "Terms & Conditions" },
-  { href: "/privacy", title: "Privacy Policy" },
-  { href: "/returns", title: "Returns & Exchanges" },
+  { href: "/privacy-policy", title: "Privacy Policy" }, // Matches your file structure
+  { href: "/return-policy", title: "Returns & Exchanges" }, // Matches your file structure
 ];
 
 // --- SVG: Decorative Footer Mandala ---
@@ -62,13 +62,13 @@ const Footer = () => {
 
             {/* Social Icons (Hover: Rani Pink) */}
             <div className="flex gap-4">
-              <a href="#" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-ambrins_primary hover:border-ambrins_primary hover:text-white transition-all duration-300">
+              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-ambrins_primary hover:border-ambrins_primary hover:text-white transition-all duration-300">
                 <FaInstagram size={18} />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-ambrins_primary hover:border-ambrins_primary hover:text-white transition-all duration-300">
+              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-ambrins_primary hover:border-ambrins_primary hover:text-white transition-all duration-300">
                 <FaFacebookF size={18} />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-ambrins_primary hover:border-ambrins_primary hover:text-white transition-all duration-300">
+              <a href="https://wa.me/94777212229" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-ambrins_primary hover:border-ambrins_primary hover:text-white transition-all duration-300">
                 <FaWhatsapp size={18} />
               </a>
             </div>
